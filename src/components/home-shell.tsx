@@ -128,7 +128,7 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
     setFavorites(next);
     try {
       localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
-      setFavoriteMessage(saved ? "관심 단지에서 해제했습니다." : "관심 단지를 이 브라우저에 저장했습니다.");
+      setFavoriteMessage("");
     } catch {
       setFavoriteMessage("브라우저 저장이 제한되어 이번 화면에서만 유지됩니다.");
     }

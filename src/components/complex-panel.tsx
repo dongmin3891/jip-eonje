@@ -111,10 +111,9 @@ export function ComplexPanel({
           </h2>
           {bounds ? <Button type="button" variant="outline" className="h-11" onClick={onShowAllLocations}>{listScope === "favorites" ? "관심 단지 위치 보기" : `${district || "서울"} 단지 위치 보기`}</Button> : null}
           <p className="mt-1 text-xs leading-5 text-neutral-500">
-            {listScope === "favorites" ? "지도 위치와 관계없이 저장한 단지를 보여줍니다." : useMapBounds ? "현재 지도에 보이는 단지입니다. 지도를 움직이면 목록도 바뀝니다." : "자치구를 선택해 목록을 좁힐 수 있습니다."}
+            {listScope === "favorites" ? "지도 범위와 관계없이, 이 브라우저에 저장한 단지를 보여줍니다." : useMapBounds ? "현재 지도에 보이는 단지입니다. 지도를 움직이면 목록도 바뀝니다." : "자치구를 선택해 목록을 좁힐 수 있습니다."}
           </p>
-          {listScope === "favorites" ? <p className="text-xs text-neutral-500">관심 단지는 이 브라우저에 저장됩니다.</p> : null}
-          <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p>
+          {favoriteMessage ? <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p> : null}
         </div>
         <div role="region" aria-label="단지 목록" className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           ref={(node) => {
@@ -161,7 +160,7 @@ export function ComplexPanel({
             <FavoriteButton name={selected.name} saved={favorites.includes(selected.id)} onToggle={() => onToggleFavorite(selected.id)} />
             <span className="text-sm text-neutral-600">{favorites.includes(selected.id) ? "관심 단지에 저장됨" : "관심 단지로 저장"}</span>
           </div>
-          <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p>
+          {favoriteMessage ? <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p> : null}
           <p className="mt-2 text-sm leading-6 text-neutral-600">{selected.address}</p>
           <div className="mt-3"><CopyButton key={selected.id} label="단지 링크 복사" value={() => window.location.href} /></div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
