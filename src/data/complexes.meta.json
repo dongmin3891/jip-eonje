@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-11-13",
+  "complexList": {
+    "datasetId": "OA-12027",
+    "title": "서울주택도시개발공사_주택관리현황",
+    "provider": "SH공사 (서울 열린데이터광장)",
+    "url": "https://data.seoul.go.kr/dataList/OA-12027/F/1/datasetView.do",
+    "sheetName": "25.12.31.기준",
+    "referenceDate": "2025-12-31",
+    "totalRows": 825,
+    "rule": "주택유형에 \"행복\"이 포함된 단지"
+  },
+  "coordinates": {
+    "datasetId": "OA-15818",
+    "title": "서울시 공동주택 아파트 정보",
+    "provider": "서울특별시 (원천: K-apt 공동주택관리정보시스템)",
+    "url": "https://data.seoul.go.kr/dataList/OA-15818/S/1/datasetView.do",
+    "kaptRows": 2898
+  },
+  "counts": {
+    "complexes": 219,
+    "withCoordinates": 153,
+    "byKaptAddress": 145,
+    "byKaptName": 8,
+    "byKakaoGeocode": 0,
+    "withoutCoordinates": 66
+  }
+}
