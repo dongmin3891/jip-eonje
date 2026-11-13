@@ -5,7 +5,7 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SH 행복주택 전월세",
+  title: "집언제",
   description: "서울 SH 행복주택의 공개된 전월세 계약과 공가 안내를 한 화면에서 확인합니다.",
 };
 

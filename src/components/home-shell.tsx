@@ -52,8 +52,8 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
       <header className="z-20 shrink-0 border-b border-neutral-200 bg-white px-4 py-3">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-base font-semibold tracking-tight">SH 행복주택 전월세</h1>
-            <p className="text-xs text-neutral-500">예비입주자용 · 공개된 전월세 계약</p>
+            <h1 className="text-base font-semibold tracking-tight">집언제</h1>
+            <p className="text-xs text-neutral-500">SH 행복주택 · 공개된 전월세 계약</p>
           </div>
           <p className="text-right text-xs leading-5 text-neutral-400">
             단지 목록 {formatDate(complexMeta.complexList.referenceDate)}
