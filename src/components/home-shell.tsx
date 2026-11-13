@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 
 import { ComplexPanel, type ListScope } from "@/components/complex-panel";
 import { FAVORITES_KEY, readFavorites } from "@/lib/favorites";
@@ -114,6 +115,8 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
   const selected = selectedId ? (getComplex(selectedId) ?? null) : null;
 
   useEffect(() => {
+    // 첫 렌더는 서버와 같게 유지하고, 마운트 뒤 브라우저 저장값을 복원한다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFavorites(readFavorites());
     const syncFavorites = (event: StorageEvent) => {
       if (event.key === FAVORITES_KEY || event.key === null) setFavorites(readFavorites());
@@ -179,17 +182,33 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-white text-neutral-900">
-      <header className="z-20 shrink-0 border-b border-neutral-200 bg-white px-4 py-3 md:px-6">
-        <div className="mb-3 flex items-baseline justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight text-balance">집언제</h1>
-            <p className="mt-0.5 text-sm text-neutral-500">SH 행복주택 · 공개된 전월세 계약</p>
+      <header className="z-20 shrink-0 border-b border-neutral-200 bg-[#fbfaf6] px-4 py-3 md:px-6">
+        <div className="mb-3 flex items-center justify-between gap-3 md:gap-5">
+          <div className="flex min-w-0 items-center gap-3 md:gap-4">
+            <div className="grid h-14 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-[#e8e1d2] bg-[#f3efe4] md:h-[4.5rem] md:w-28">
+              <Image
+                src="/images/header-housing.png"
+                alt="지도와 아파트 일러스트"
+                width={600}
+                height={393}
+                priority
+                sizes="(min-width: 768px) 112px, 80px"
+                className="h-auto w-[5.3rem] max-w-none translate-y-0.5 md:w-[7.2rem]"
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold tracking-[0.08em] text-neutral-500 md:text-xs">서울 SH 행복주택</p>
+              <h1 className="mt-0.5 text-xl font-bold tracking-[-0.035em] text-neutral-950 md:text-2xl">집언제</h1>
+              <p className="mt-0.5 truncate text-xs text-neutral-500 md:text-sm">단지 위치와 공개된 전월세 계약을 한눈에</p>
+            </div>
           </div>
-          <p className="text-right text-xs leading-5 text-neutral-400 tabular-nums">
-            단지 목록 {formatDate(complexMeta.complexList.referenceDate)}
-            <br />
-            {complexMeta.counts.complexes}곳 · 지도 {complexMeta.counts.withCoordinates}곳
-          </p>
+          <div className="shrink-0 rounded-xl border border-neutral-200/80 bg-white/75 px-2.5 py-2 text-right shadow-sm shadow-black/[0.02] md:px-3">
+            <p className="hidden text-[11px] text-neutral-400 sm:block">{formatDate(complexMeta.complexList.referenceDate)} 기준</p>
+            <p className="text-xs font-semibold text-neutral-700 tabular-nums md:mt-0.5">
+              {complexMeta.counts.complexes}곳
+              <span className="block font-normal text-neutral-400 sm:inline"> · 지도 {complexMeta.counts.withCoordinates}곳</span>
+            </p>
+          </div>
         </div>
         <ComplexSearch key={selectedId ?? "list"} initialQuery={rememberedName} recentComplexes={recentComplexes} recentMessage={recentMessage} onClearRecents={clearRecents} onSelect={selectComplex} />
       </header>

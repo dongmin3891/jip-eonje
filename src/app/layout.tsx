@@ -6,7 +6,20 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "집언제",
-  description: "서울 SH 행복주택의 공개된 전월세 계약과 공가 안내를 한 화면에서 확인합니다.",
+  applicationName: "집언제",
+  description: "서울 SH 행복주택 단지 위치와 공개된 전월세 계약을 한눈에 확인합니다.",
+  openGraph: {
+    title: "집언제",
+    description: "서울 SH 행복주택 단지 위치와 공개된 전월세 계약을 한눈에 확인합니다.",
+    type: "website",
+    locale: "ko_KR",
+    siteName: "집언제",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "집언제",
+    description: "서울 SH 행복주택 단지 위치와 공개된 전월세 계약을 한눈에 확인합니다.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

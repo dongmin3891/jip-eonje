@@ -91,6 +91,7 @@ afterEach(() => {
 
 it("단지 선택 뒤 상세에서 조회하고, 목록으로 돌아가면 검색어를 비운다", async () => {
   mount();
+  expect(within(screen.getByRole("banner")).getByRole("img", { name: "지도와 아파트 일러스트" })).toBeInTheDocument();
   expect(within(screen.getByRole("banner")).queryByRole("button", { name: "3개월" })).not.toBeInTheDocument();
   selectComplex();
   expect(await rentSection().findByRole("status")).toBeInTheDocument();
