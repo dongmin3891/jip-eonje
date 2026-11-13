@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
 import { HomeShell } from "@/components/home-shell";
-import type { RentResponse } from "@/lib/rent/types";
+import type { RentAreasResponse, RentResponse } from "@/lib/rent/types";
 import { RECENT_COMPLEXES_KEY } from "@/lib/recent-complexes";
 
 const response: RentResponse = {
@@ -11,7 +11,6 @@ const response: RentResponse = {
   to: "2026-11-13",
   lawdCd: "11680",
   months: ["202611"],
-  areasM2: [29, 59],
   contracts: [
     { id: "new", contractDate: "2026-11-01", areaM2: 29, depositManwon: 5000, monthlyRentManwon: 30, floor: 3, contractType: "신규", aptNm: "강남센트럴아이파크", aptSeq: null },
     { id: "renewal", contractDate: "2026-11-02", areaM2: 59, depositManwon: 10000, monthlyRentManwon: 50, floor: 5, contractType: "갱신", aptNm: "강남센트럴아이파크", aptSeq: null },
@@ -20,10 +19,23 @@ const response: RentResponse = {
   fetchedAt: "2026-11-13T00:00:00Z",
   source: { name: "테스트 출처", url: "https://example.com" },
 };
+const areasResponse: RentAreasResponse = {
+  complexId: "5d48b3157f",
+  areasM2: [29, 45, 59],
+  fetchedAt: "2026-11-13T00:00:00Z",
+};
 
 const originalFetch = global.fetch;
 const fetchMock = jest.fn();
 const clients: QueryClient[] = [];
+
+function isAreasRequest(input: RequestInfo | URL): boolean {
+  return String(input).startsWith("/api/rent/areas?");
+}
+
+function apiResponse(body: unknown, ok = true) {
+  return { ok, json: async () => body };
+}
 
 function mount(hasRentKey = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -57,7 +69,9 @@ beforeEach(() => {
   window.history.replaceState(null, "", "/");
   localStorage.clear();
   fetchMock.mockReset();
-  fetchMock.mockResolvedValue({ ok: true, json: async () => response });
+  fetchMock.mockImplementation(async (input: RequestInfo | URL) =>
+    isAreasRequest(input) ? apiResponse(areasResponse) : apiResponse(response),
+  );
   global.fetch = fetchMock;
 });
 
@@ -109,36 +123,82 @@ it("면적·유형 조합을 초기화하고 잘못된 기간은 조회하지 �
   mount();
   selectComplex();
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  await waitFor(() => expect(rentSection().getByRole("option", { name: /45\.00㎡.*0건/ })).toBeInTheDocument());
+  fireEvent.change(rentSection().getByRole("combobox", { name: "전용면적" }), { target: { value: "45.00" } });
+  expect(rentSection().getByRole("status")).toHaveTextContent("0건");
   fireEvent.change(rentSection().getByRole("combobox", { name: "전용면적" }), { target: { value: "29.00" } });
   fireEvent.click(rentSection().getByRole("button", { name: "갱신" }));
   expect(rentSection().getByRole("status")).toHaveTextContent("0건");
   fireEvent.click(rentSection().getByRole("button", { name: "면적·유형 초기화" }));
   expect(rentSection().getByRole("status")).toHaveTextContent("2건");
   fireEvent.click(rentSection().getByRole("button", { name: "1년" }));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
-  const request = new URL(fetchMock.mock.calls[1][0], "http://localhost");
+  const contractRequests = fetchMock.mock.calls.filter(([input]) => !isAreasRequest(input));
+  const request = new URL(contractRequests.at(-1)![0], "http://localhost");
+  expect(fetchMock.mock.calls.filter(([input]) => isAreasRequest(input))).toHaveLength(1);
   fireEvent.click(rentSection().getByRole("button", { name: "직접 선택" }));
   expect(rentSection().getByLabelText("시작일")).toHaveValue(request.searchParams.get("from"));
   expect(rentSection().getByLabelText("종료일")).toHaveValue(request.searchParams.get("to"));
   fireEvent.change(rentSection().getByLabelText("시작일"), { target: { value: "2099-01-01" } });
   expect(rentSection().getByRole("alert")).toHaveTextContent("시작일이 종료일보다 늦습니다.");
   expect(rentSection().getByRole("combobox", { name: "전용면적" })).toBeDisabled();
-  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(fetchMock).toHaveBeenCalledTimes(3);
   fireEvent.click(rentSection().getByRole("button", { name: "일주일" }));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  expect(fetchMock.mock.calls.filter(([input]) => isAreasRequest(input))).toHaveLength(1);
 });
 
 it("오류 상태에서도 기간을 바꾸거나 재시도할 수 있다", async () => {
-  fetchMock.mockResolvedValueOnce({ ok: false, json: async () => ({ code: "UPSTREAM", message: "잠시 후 다시 시도해 주세요." }) });
+  let contractAttempts = 0;
+  fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+    if (isAreasRequest(input)) return apiResponse(areasResponse);
+    contractAttempts += 1;
+    return contractAttempts === 1
+      ? apiResponse({ code: "UPSTREAM", message: "잠시 후 다시 시도해 주세요." }, false)
+      : apiResponse(response);
+  });
   mount();
   selectComplex();
   expect(await rentSection().findByRole("alert")).toHaveTextContent("잠시 후 다시 시도해 주세요.");
+  await waitFor(() => expect(rentSection().getByRole("option", { name: /45\.00㎡.*0건/ })).toBeInTheDocument());
   expect(rentSection().getByRole("button", { name: "6개월" })).toBeEnabled();
   fireEvent.click(rentSection().getByRole("button", { name: "다시 시도" }));
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
-  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+});
+
+it("면적 조회가 느려도 계약을 먼저 보여주고 면적 선택만 잠시 비활성화한다", async () => {
+  let resolveAreas!: (value: ReturnType<typeof apiResponse>) => void;
+  const pendingAreas = new Promise<ReturnType<typeof apiResponse>>((resolve) => { resolveAreas = resolve; });
+  fetchMock.mockImplementation(async (input: RequestInfo | URL) =>
+    isAreasRequest(input) ? pendingAreas : apiResponse(response),
+  );
+  mount();
+  selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  const areaSelect = rentSection().getByRole("combobox", { name: "전용면적" });
+  expect(areaSelect).toBeDisabled();
+  expect(areaSelect).toHaveDisplayValue("면적 정보 불러오는 중…");
+  expect(rentSection().getByRole("button", { name: "신규" })).toBeEnabled();
+  await act(async () => { resolveAreas(apiResponse(areasResponse)); });
+  await waitFor(() => expect(areaSelect).toBeEnabled());
+});
+
+it("면적 조회가 실패해도 계약과 현재 기간의 면적 필터를 사용한다", async () => {
+  fetchMock.mockImplementation(async (input: RequestInfo | URL) =>
+    isAreasRequest(input)
+      ? apiResponse({ code: "UPSTREAM", message: "면적 실패" }, false)
+      : apiResponse(response),
+  );
+  mount();
+  selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  expect(rentSection().queryByRole("alert")).not.toBeInTheDocument();
+  expect(rentSection().getByText(/현재 기간의 면적만 표시합니다/)).toBeInTheDocument();
+  expect(rentSection().getByRole("option", { name: /29\.00㎡.*1건/ })).toBeInTheDocument();
+  expect(rentSection().getByRole("combobox", { name: "전용면적" })).toBeEnabled();
 });
 
 it("패널 크기를 바꿔도 조회 조건을 유지하고, 접은 상태에서 검색하면 다시 연다", async () => {

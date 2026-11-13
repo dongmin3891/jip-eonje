@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { getComplex } from "@/lib/complexes";
 import { getRentContracts } from "@/lib/rent/molit";
-import { areaCatalogRange, resolveRange } from "@/lib/rent/period";
+import { resolveRange } from "@/lib/rent/period";
 import { MolitError } from "@/lib/rent/parse";
 import { allowRequest, clientKey } from "@/lib/rent/rate-limit";
 import { MOLIT_SOURCE, type ApiErrorBody } from "@/lib/rent/types";
@@ -65,14 +65,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const catalog = areaCatalogRange();
     const result = await getRentContracts(
       complex,
       range.from,
       range.to,
       range.months,
       serviceKey,
-      catalog.months,
     );
     return Response.json({
       complexId: complex.id,
@@ -81,7 +79,6 @@ export async function GET(request: Request) {
       lawdCd: complex.lawdCd,
       months: range.months,
       contracts: result.contracts,
-      areasM2: result.areasM2,
       matchedAptNames: result.matchedAptNames,
       fetchedAt: new Date().toISOString(),
       source: MOLIT_SOURCE,

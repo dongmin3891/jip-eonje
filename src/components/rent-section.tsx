@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatAreaWithPyeong, formatDate, formatFetchedAt, formatFloor, formatManwon } from "@/lib/format";
 import type { Complex } from "@/lib/complexes";
 import { countByArea, mergeAreaKeys } from "@/lib/rent/areas";
-import type { ApiErrorBody, ContractType, RentResponse } from "@/lib/rent/types";
+import type { ApiErrorBody, ContractType, RentAreasResponse, RentResponse } from "@/lib/rent/types";
 
 type RentSectionProps = {
   complex: Complex;
@@ -46,6 +46,20 @@ async function fetchRent(complexId: string, from: string, to: string): Promise<R
   return body as RentResponse;
 }
 
+async function fetchRentAreas(complexId: string): Promise<RentAreasResponse> {
+  const params = new URLSearchParams({ complexId });
+  const response = await fetch(`/api/rent/areas?${params}`);
+  const body = (await response.json()) as RentAreasResponse | ApiErrorBody;
+  if (!response.ok) {
+    const errorBody = body as ApiErrorBody;
+    throw new RentRequestError(
+      errorBody.message || "전용면적 정보를 불러오지 못했습니다.",
+      errorBody.code || "UPSTREAM",
+    );
+  }
+  return body as RentAreasResponse;
+}
+
 export function RentSection(props: RentSectionProps) {
   return <RentSectionBody key={props.complex.id} {...props} />;
 }
@@ -54,16 +68,25 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
   const [area, setArea] = useState("all");
   const [contractType, setContractType] = useState<TypeFilter>("all");
 
-  const query = useQuery({
+  const contractQuery = useQuery({
     queryKey: ["rent", complex.id, from, to],
     queryFn: () => fetchRent(complex.id, from, to),
     enabled: enabled && !rangeError,
   });
+  const areasQuery = useQuery({
+    queryKey: ["rent-areas", complex.id],
+    queryFn: () => fetchRentAreas(complex.id),
+    enabled: enabled && !rangeError,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+  });
 
-  const contracts = query.data?.contracts ?? [];
-  const areas = mergeAreaKeys(query.data?.areasM2 ?? [], contracts);
+  const contracts = contractQuery.data?.contracts ?? [];
+  const areas = mergeAreaKeys(areasQuery.data?.areasM2 ?? [], contracts);
   const areaCounts = countByArea(contracts);
   const activeArea = areas.includes(area) ? area : "all";
+  const areaSelectDisabled =
+    !enabled || !!rangeError || areasQuery.isPending || (!areasQuery.isSuccess && !contractQuery.isSuccess);
   const filtered = contracts.filter((contract) => {
     const areaMatches = activeArea === "all" || contract.areaM2.toFixed(2) === activeArea;
     const typeMatches = contractType === "all" || contract.contractType === contractType;
@@ -80,7 +103,7 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
 
       <div className="space-y-4 rounded-xl border border-neutral-200 p-3">
         {periodControl}
-        <fieldset disabled={!enabled || !!rangeError || !query.isSuccess} className="min-w-0 space-y-3 border-t border-neutral-100 pt-3 disabled:opacity-50">
+        <fieldset disabled={!enabled || !!rangeError} className="min-w-0 space-y-3 border-t border-neutral-100 pt-3 disabled:opacity-50">
           <legend className="sr-only">면적 및 계약 유형</legend>
           <div className="space-y-2">
             <label className="block text-xs font-medium text-neutral-600" htmlFor={`area-${complex.id}`}>전용면적</label>
@@ -88,15 +111,24 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
               id={`area-${complex.id}`}
               className="h-11 w-full min-w-0 rounded-lg border border-neutral-200 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-neutral-500"
               value={activeArea}
+              disabled={areaSelectDisabled}
               onChange={(event) => setArea(event.target.value)}
             >
-              <option value="all">모든 면적</option>
+              <option value="all">{areasQuery.isPending && enabled && !rangeError ? "면적 정보 불러오는 중…" : "모든 면적"}</option>
               {areas.map((value) => (
                 <option key={value} value={value}>
                   {formatAreaWithPyeong(Number(value))} · {areaCounts.get(value) ?? 0}건
                 </option>
               ))}
             </select>
+            {areasQuery.isError ? (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2">
+                <p className="text-xs leading-5 text-neutral-500">36개월 면적 정보를 불러오지 못했습니다. 현재 기간의 면적만 표시합니다.</p>
+                <Button type="button" variant="ghost" className="h-9 shrink-0 px-2 text-xs" disabled={areasQuery.isFetching} onClick={() => void areasQuery.refetch()}>
+                  {areasQuery.isFetching ? "불러오는 중…" : "면적 다시 시도"}
+                </Button>
+              </div>
+            ) : null}
           </div>
           <div role="group" aria-label="계약 유형" className="grid grid-cols-3 gap-1">
             {(["all", "신규", "갱신"] as const).map((type) => (
@@ -106,6 +138,7 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
                 className="h-10"
                 variant={contractType === type ? "default" : "outline"}
                 aria-pressed={contractType === type}
+                disabled={!enabled || !!rangeError || !contractQuery.isSuccess}
                 onClick={() => setContractType(type)}
               >
                 {type === "all" ? "전체" : type}
@@ -125,20 +158,20 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
         <p className="rounded-xl bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
           전월세 계약 조회를 준비 중입니다. 공가·예비자 현황은 위의 SH 주택정보에서 확인해 주세요.
         </p>
-      ) : query.isPending ? (
+      ) : contractQuery.isPending ? (
         <div role="status" className="space-y-3">
           <span className="sr-only">전월세 계약을 불러오는 중입니다.</span>
           <Skeleton className="h-7 w-24" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />
         </div>
-      ) : query.isError ? (
+      ) : contractQuery.isError ? (
         <div role="alert" className="space-y-3 rounded-xl bg-neutral-50 p-4">
           <p className="text-sm leading-6 text-neutral-600">
-            {query.error instanceof Error ? query.error.message : "전월세 계약을 불러오지 못했습니다."}
+            {contractQuery.error instanceof Error ? contractQuery.error.message : "전월세 계약을 불러오지 못했습니다."}
           </p>
-          <Button type="button" variant="outline" className="h-11" disabled={query.isFetching} onClick={() => void query.refetch()}>
-            {query.isFetching ? "다시 불러오는 중…" : "다시 시도"}
+          <Button type="button" variant="outline" className="h-11" disabled={contractQuery.isFetching} onClick={() => void contractQuery.refetch()}>
+            {contractQuery.isFetching ? "다시 불러오는 중…" : "다시 시도"}
           </Button>
         </div>
       ) : (
@@ -188,8 +221,8 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
           <details className="text-xs leading-5 text-neutral-500">
             <summary className="cursor-pointer rounded-md py-2 focus-visible:outline-2 focus-visible:outline-neutral-500">데이터 출처·조회 시각</summary>
             <p className="mt-1">
-              조회 {formatFetchedAt(query.data.fetchedAt)} · {query.data.source.name}
-              {query.data.matchedAptNames.length > 0 ? ` · 매칭 단지명 ${query.data.matchedAptNames.join(", ")}` : ""}
+              조회 {formatFetchedAt(contractQuery.data.fetchedAt)} · {contractQuery.data.source.name}
+              {contractQuery.data.matchedAptNames.length > 0 ? ` · 매칭 단지명 ${contractQuery.data.matchedAptNames.join(", ")}` : ""}
             </p>
           </details>
         </>

@@ -19,14 +19,19 @@ export type RentResponse = {
   lawdCd: string;
   months: string[];
   contracts: RentContract[];
-  /** 최근 36개월과 이번 조회에서 보인 전용면적. 이번 기간 계약이 없는 면적도 포함한다. */
-  areasM2: number[];
   matchedAptNames: string[];
   fetchedAt: string;
   source: {
     name: string;
     url: string;
   };
+};
+
+export type RentAreasResponse = {
+  complexId: string;
+  /** 최근 36개월 계약에서 발견한 전용면적. */
+  areasM2: number[];
+  fetchedAt: string;
 };
 
 export type ApiErrorBody = {

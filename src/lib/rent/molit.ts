@@ -119,9 +119,17 @@ async function mapLimit<T, R>(items: T[], limit: number, task: (item: T) => Prom
   return results;
 }
 
+async function getComplexDeals(complex: Complex, months: string[], serviceKey: string): Promise<PublicDeal[]> {
+  const uniqueMonths = [...new Set(months)];
+  if (uniqueMonths.length === 0) return [];
+  const pages = await mapLimit(uniqueMonths, MONTH_CONCURRENCY, (month) =>
+    fetchMonth(complex.lawdCd, month, serviceKey),
+  );
+  return pages.flat().filter((deal) => matchesComplex(deal, complex));
+}
+
 /**
- * 지역·계약년월로 받은 뒤 단지 주소와 기간으로 걸러 최신 계약일순으로 돌려준다.
- * areaMonths의 계약은 건수에 넣지 않고 전용면적 목록만 모은다.
+ * 선택한 계약년월만 받은 뒤 단지 주소와 날짜 범위로 걸러 최신 계약일순으로 돌려준다.
  * 계약 고유번호가 없어 내용이 같은 행은 지우지 않는다. 페이지가 겹치면 건수가 늘 수 있다.
  */
 export async function getRentContracts(
@@ -130,18 +138,8 @@ export async function getRentContracts(
   to: string,
   months: string[],
   serviceKey: string,
-  areaMonths: string[] = [],
-): Promise<{ contracts: RentContract[]; matchedAptNames: string[]; areasM2: number[] }> {
-  const loadMonths = [...new Set([...months, ...areaMonths])];
-  if (loadMonths.length === 0) return { contracts: [], matchedAptNames: [], areasM2: [] };
-
-  const pages = await mapLimit(loadMonths, MONTH_CONCURRENCY, (month) =>
-    fetchMonth(complex.lawdCd, month, serviceKey),
-  );
-  const complexDeals = pages.flat().filter((deal) => matchesComplex(deal, complex));
-  const areasM2 = [...new Set(complexDeals.map((deal) => areaKey(deal.areaM2)))]
-    .sort((left, right) => Number(left) - Number(right))
-    .map(Number);
+): Promise<{ contracts: RentContract[]; matchedAptNames: string[] }> {
+  const complexDeals = await getComplexDeals(complex, months, serviceKey);
   const matched = complexDeals.filter((deal) => deal.contractDate >= from && deal.contractDate <= to);
 
   matched.sort(
@@ -174,5 +172,17 @@ export async function getRentContracts(
   }));
 
   const matchedAptNames = [...new Set(matched.map((deal) => deal.aptNm).filter(Boolean))];
-  return { contracts, matchedAptNames, areasM2 };
+  return { contracts, matchedAptNames };
+}
+
+/** 최근 36개월 등 지정한 월 목록에서 단지의 전용면적만 모은다. 월별 캐시와 in-flight 요청은 계약 조회와 공유한다. */
+export async function getRentAreas(
+  complex: Complex,
+  months: string[],
+  serviceKey: string,
+): Promise<number[]> {
+  const complexDeals = await getComplexDeals(complex, months, serviceKey);
+  return [...new Set(complexDeals.map((deal) => areaKey(deal.areaM2)))]
+    .sort((left, right) => Number(left) - Number(right))
+    .map(Number);
 }
