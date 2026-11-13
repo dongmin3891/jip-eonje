@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jip-eonje-service
+  namespace: jip-eonje
+spec:
+  type: ClusterIP
+  selector:
+    app: jip-eonje
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
