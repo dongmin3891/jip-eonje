@@ -3,6 +3,27 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { ComplexSearch } from "@/components/complex-search";
 
 describe("ComplexSearch", () => {
+  it("방향키로 고른 결과를 Enter로 선택하고 Escape로 닫는다", () => {
+    const onSelect = jest.fn();
+    render(<ComplexSearch onSelect={onSelect} />);
+    const input = screen.getByRole("combobox");
+    fireEvent.change(input, { target: { value: "래미안" } });
+    const options = screen.getAllByRole("option");
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(options[1]).toHaveAttribute("aria-selected", "true");
+    expect(input).toHaveAttribute("aria-activedescendant", options[1].id);
+    fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+    expect(onSelect).not.toHaveBeenCalled();
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(options[1]).toHaveTextContent(onSelect.mock.calls[0][0].name);
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "Escape" });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(input).toHaveAttribute("aria-expanded", "false");
+  });
   it("단지명으로 고르고, 없으면 안내한다", () => {
     const onSelect = jest.fn();
     render(<ComplexSearch onSelect={onSelect} />);

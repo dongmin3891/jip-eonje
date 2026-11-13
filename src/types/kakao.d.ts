@@ -14,6 +14,7 @@ interface KakaoMap {
   setBounds(bounds: KakaoLatLngBounds): void;
   getBounds(): KakaoLatLngBounds;
   getCenter(): KakaoLatLng;
+  getLevel(): number;
   setCenter(latlng: KakaoLatLng): void;
   setLevel(level: number): void;
   setDraggable(draggable: boolean): void;
@@ -43,6 +44,7 @@ interface KakaoMarker {
 }
 
 interface KakaoMarkerClusterer {
+  clear(): void;
   addMarkers(markers: KakaoMarker[]): void;
 }
 

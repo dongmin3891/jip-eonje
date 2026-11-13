@@ -4,22 +4,32 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { searchComplexes, type Complex } from "@/lib/complexes";
+import { ShLinkBadge } from "@/components/sh-link-badge";
 
 type ComplexSearchProps = {
   initialQuery?: string;
+  recentComplexes?: Complex[];
+  recentMessage?: string;
+  onClearRecents?: () => void;
   onSelect: (complex: Complex) => void;
 };
 
-export function ComplexSearch({ initialQuery = "", onSelect }: ComplexSearchProps) {
+export function ComplexSearch({ initialQuery = "", recentComplexes = [], recentMessage = "", onClearRecents, onSelect }: ComplexSearchProps) {
   const [query, setQuery] = useState(initialQuery);
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
+  const showingRecent = !query.trim();
+  const results = showingRecent ? recentComplexes : searchComplexes(query);
+  const showResults = open && (!!query.trim() || recentComplexes.length > 0 || !!recentMessage);
 
   useEffect(() => {
-    if (initialQuery) setQuery(initialQuery);
-  }, [initialQuery]);
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const listId = useId();
-  const results = searchComplexes(query);
+    if (showResults && activeIndex >= 0) {
+      document.getElementById(`${listId}-${activeIndex}`)?.scrollIntoView?.({ block: "nearest" });
+    }
+  }, [activeIndex, showResults, listId]);
 
   useEffect(() => {
     function onPointerDown(event: PointerEvent) {
@@ -37,30 +47,46 @@ export function ComplexSearch({ initialQuery = "", onSelect }: ComplexSearchProp
 
   function clearQuery() {
     setQuery("");
-    setOpen(false);
+    setActiveIndex(-1);
+    setOpen(true);
+    inputRef.current?.focus();
   }
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="relative" onBlur={(event) => {
+      if (!rootRef.current?.contains(event.relatedTarget)) setOpen(false);
+    }}>
       <Input
+        ref={inputRef}
         role="combobox"
-        aria-expanded={open}
-        aria-controls={listId}
+        aria-expanded={showResults}
+        aria-controls={showResults ? listId : undefined}
+        aria-activedescendant={showResults && activeIndex >= 0 && results[activeIndex] ? `${listId}-${activeIndex}` : undefined}
         aria-autocomplete="list"
         aria-label="단지명 또는 지역 검색"
-        placeholder="단지명, 자치구, 동"
+        placeholder="단지 검색 · 최근 본 단지"
         className={query ? "h-10 pr-10 text-base" : "h-10 text-base"}
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
+          setActiveIndex(-1);
           setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => { setOpen(true); setActiveIndex(-1); }}
         onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing || event.keyCode === 229) return;
           if (event.key === "Escape") setOpen(false);
-          if (event.key === "Enter" && results[0]) {
+          if ((event.key === "ArrowDown" || event.key === "ArrowUp") && results.length) {
             event.preventDefault();
-            choose(results[0]);
+            setOpen(true);
+            setActiveIndex((current) => {
+              if (!showResults || current < 0) return event.key === "ArrowDown" ? 0 : results.length - 1;
+              return (current + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length;
+            });
+          }
+          if (event.key === "Enter" && showResults && results[activeIndex < 0 ? 0 : activeIndex]) {
+            event.preventDefault();
+            choose(results[activeIndex < 0 ? 0 : activeIndex]);
           }
         }}
       />
@@ -83,33 +109,44 @@ export function ComplexSearch({ initialQuery = "", onSelect }: ComplexSearchProp
           </svg>
         </button>
       ) : null}
-      {open && query.trim() ? (
+      {showResults ? (
         <div
-          id={listId}
-          role="listbox"
-          className="absolute top-full z-30 mt-1 max-h-80 w-full overflow-auto overscroll-contain rounded-xl border border-black/10 bg-white shadow-[0_8px_24px_oklch(0_0_0/0.08)]"
+          className="absolute top-full z-30 mt-1 max-h-[min(20rem,50dvh)] w-full overflow-auto overscroll-contain rounded-xl border border-black/10 bg-white shadow-[0_8px_24px_oklch(0_0_0/0.08)]"
         >
+          {showingRecent ? (
+            <div className="flex items-center justify-between border-b border-neutral-100 px-3">
+              <p className="text-sm font-medium">최근 본 단지</p>
+              {results.length > 0 && onClearRecents ? <button type="button" className="min-h-11 px-2 text-xs text-neutral-500 hover:text-neutral-900" onMouseDown={(event) => event.preventDefault()} onClick={() => { setActiveIndex(-1); onClearRecents(); }}>기록 지우기</button> : null}
+            </div>
+          ) : null}
+          <div id={listId} role="listbox" aria-label={showingRecent ? "최근 본 단지" : "단지 검색 결과"}>
           {results.length === 0 ? (
             <p className="px-3 py-3 text-sm text-neutral-500" role="status">
-              해당하는 단지가 없습니다.
+              {showingRecent ? "최근 본 단지가 없습니다." : "해당하는 단지가 없습니다."}
             </p>
           ) : (
-            results.map((complex) => (
+            results.map((complex, index) => (
               <button
                 key={complex.id}
                 type="button"
                 role="option"
-                aria-selected={false}
-                className="block w-full border-b border-neutral-100 px-3 py-2 text-left last:border-b-0 hover:bg-neutral-50"
+                id={`${listId}-${index}`}
+                tabIndex={-1}
+                aria-selected={activeIndex === index}
+                className={`block w-full border-b border-neutral-100 px-3 py-2 text-left last:border-b-0 hover:bg-neutral-50 ${activeIndex === index ? "bg-neutral-100 ring-1 ring-inset ring-neutral-300" : ""}`}
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(complex)}
               >
                 <span className="block text-sm font-medium text-neutral-900">{complex.name}</span>
+                <ShLinkBadge complexId={complex.id} />
                 <span className="block text-xs text-neutral-500">
                   {complex.district} · {complex.address}
                 </span>
               </button>
             ))
           )}
+          </div>
+          {showingRecent ? <p className="border-t border-neutral-100 px-3 py-2 text-xs leading-5 text-neutral-500" role="status">{recentMessage || "이 브라우저에 최근 본 단지 10곳까지 저장합니다."}</p> : null}
         </div>
       ) : null}
     </div>
