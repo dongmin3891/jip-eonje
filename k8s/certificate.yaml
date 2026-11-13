@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jip-eonje-prod-cert
+  namespace: jip-eonje
+spec:
+  secretName: jip-eonje-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  dnsNames:
+    - jip.ddongmy.com
