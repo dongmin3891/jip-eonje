@@ -1,4 +1,4 @@
-import { formatArea, formatDate, formatFloor, formatManwon } from "@/lib/format";
+import { formatArea, formatAreaWithPyeong, formatDate, formatFloor, formatManwon, formatPyeong } from "@/lib/format";
 
 describe("formatManwon", () => {
   it("만원 단위를 억과 만원으로 읽는다", () => {
@@ -16,6 +16,10 @@ describe("날짜와 면적", () => {
     expect(formatDate("2023-01-09")).toBe("2023.01.09");
     expect(formatArea(39.82)).toBe("39.82㎡");
     expect(formatArea(59.9)).toBe("59.90㎡");
+    expect(formatPyeong(39)).toBe("11.8평");
+    expect(formatPyeong(40)).toBe("12.1평");
+    expect(formatPyeong(84.99)).toBe("25.7평");
+    expect(formatAreaWithPyeong(125.46)).toBe("125.46㎡ · 38.0평");
     expect(formatFloor(5)).toBe("5층");
     expect(formatFloor(-1)).toBe("지하 1층");
     expect(formatFloor(null)).toBeNull();

@@ -9,6 +9,15 @@ export function koreaToday(now = new Date()): string {
   }).format(now);
 }
 
+export function shiftDays(isoDate: string, days: number): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1, day + days));
+  const nextYear = shifted.getUTCFullYear();
+  const nextMonth = String(shifted.getUTCMonth() + 1).padStart(2, "0");
+  const nextDay = String(shifted.getUTCDate()).padStart(2, "0");
+  return `${nextYear}-${nextMonth}-${nextDay}`;
+}
+
 export function shiftMonths(isoDate: string, months: number): string {
   const [year, month, day] = isoDate.split("-").map(Number);
   const shifted = new Date(Date.UTC(year, month - 1 + months, day));
@@ -23,6 +32,21 @@ export function presetRange(
   today = koreaToday(),
 ): { from: string; to: string } {
   return { from: shiftMonths(today, -months), to: today };
+}
+
+/** 일주일. 끝날은 서울 오늘이고, 시작은 그 7일 전이다. */
+export function dayRange(days: 7, today = koreaToday()): { from: string; to: string } {
+  return { from: shiftDays(today, -days), to: today };
+}
+
+/** 전용면적 목록용 최근 36개월. 조회 한도와 같은 길이이고, 기간 필터와는 따로 쓴다. */
+export function areaCatalogRange(today = koreaToday()): { from: string; to: string; months: string[] } {
+  const from = shiftMonths(today, -35);
+  return {
+    from,
+    to: today,
+    months: listMonths(from, today).filter((month) => month <= yyyymm(today)),
+  };
 }
 
 function monthIndex(isoDate: string): number {

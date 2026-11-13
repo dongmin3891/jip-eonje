@@ -13,6 +13,11 @@ interface KakaoLatLngBounds {
 interface KakaoMap {
   setBounds(bounds: KakaoLatLngBounds): void;
   getBounds(): KakaoLatLngBounds;
+  getCenter(): KakaoLatLng;
+  setCenter(latlng: KakaoLatLng): void;
+  setLevel(level: number): void;
+  setDraggable(draggable: boolean): void;
+  panBy(dx: number, dy: number, options?: { animate?: { duration?: number } }): void;
   panTo(latlng: KakaoLatLng): void;
   relayout(): void;
 }
@@ -41,6 +46,10 @@ interface KakaoMarkerClusterer {
   addMarkers(markers: KakaoMarker[]): void;
 }
 
+interface KakaoCustomOverlay {
+  setMap(map: KakaoMap | null): void;
+}
+
 interface KakaoMapsNamespace {
   load(callback: () => void): void;
   LatLng: new (lat: number, lng: number) => KakaoLatLng;
@@ -64,7 +73,18 @@ interface KakaoMapsNamespace {
     markers?: KakaoMarker[];
     minLevel?: number;
     averageCenter?: boolean;
+    calculator?: number[];
+    styles?: Array<Record<string, string>>;
   }) => KakaoMarkerClusterer;
+  CustomOverlay: new (options: {
+    map?: KakaoMap;
+    position: KakaoLatLng;
+    content: HTMLElement | string;
+    xAnchor?: number;
+    yAnchor?: number;
+    zIndex?: number;
+    clickable?: boolean;
+  }) => KakaoCustomOverlay;
   event: {
     addListener(target: object, type: string, handler: () => void): void;
   };

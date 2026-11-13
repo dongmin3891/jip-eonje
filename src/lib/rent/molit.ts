@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Complex } from "@/lib/complexes";
+import { areaKey } from "@/lib/rent/areas";
 import { matchesComplex } from "@/lib/rent/match";
 import { isRecentMonth } from "@/lib/rent/period";
 import { MolitError, parseMolitXml, type PublicDeal } from "@/lib/rent/parse";
@@ -120,6 +121,7 @@ async function mapLimit<T, R>(items: T[], limit: number, task: (item: T) => Prom
 
 /**
  * 지역·계약년월로 받은 뒤 단지 주소와 기간으로 걸러 최신 계약일순으로 돌려준다.
+ * areaMonths의 계약은 건수에 넣지 않고 전용면적 목록만 모은다.
  * 계약 고유번호가 없어 내용이 같은 행은 지우지 않는다. 페이지가 겹치면 건수가 늘 수 있다.
  */
 export async function getRentContracts(
@@ -128,15 +130,19 @@ export async function getRentContracts(
   to: string,
   months: string[],
   serviceKey: string,
-): Promise<{ contracts: RentContract[]; matchedAptNames: string[] }> {
-  if (months.length === 0) return { contracts: [], matchedAptNames: [] };
+  areaMonths: string[] = [],
+): Promise<{ contracts: RentContract[]; matchedAptNames: string[]; areasM2: number[] }> {
+  const loadMonths = [...new Set([...months, ...areaMonths])];
+  if (loadMonths.length === 0) return { contracts: [], matchedAptNames: [], areasM2: [] };
 
-  const pages = await mapLimit(months, MONTH_CONCURRENCY, (month) =>
+  const pages = await mapLimit(loadMonths, MONTH_CONCURRENCY, (month) =>
     fetchMonth(complex.lawdCd, month, serviceKey),
   );
-  const matched = pages.flat().filter((deal) => {
-    return deal.contractDate >= from && deal.contractDate <= to && matchesComplex(deal, complex);
-  });
+  const complexDeals = pages.flat().filter((deal) => matchesComplex(deal, complex));
+  const areasM2 = [...new Set(complexDeals.map((deal) => areaKey(deal.areaM2)))]
+    .sort((left, right) => Number(left) - Number(right))
+    .map(Number);
+  const matched = complexDeals.filter((deal) => deal.contractDate >= from && deal.contractDate <= to);
 
   matched.sort(
     (left, right) =>
@@ -168,5 +174,5 @@ export async function getRentContracts(
   }));
 
   const matchedAptNames = [...new Set(matched.map((deal) => deal.aptNm).filter(Boolean))];
-  return { contracts, matchedAptNames };
+  return { contracts, matchedAptNames, areasM2 };
 }

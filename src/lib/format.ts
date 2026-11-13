@@ -20,8 +20,20 @@ export function formatDate(isoDate: string): string {
   return `${match[1]}.${match[2]}.${match[3]}`;
 }
 
+/** 전용면적 1평. 공급면적 평형과는 다르다. */
+const SQM_PER_PYEONG = 3.3058;
+
 export function formatArea(areaM2: number): string {
   return `${areaM2.toFixed(2)}㎡`;
+}
+
+export function formatPyeong(areaM2: number): string {
+  if (!Number.isFinite(areaM2)) return "-";
+  return `${(areaM2 / SQM_PER_PYEONG).toFixed(1)}평`;
+}
+
+export function formatAreaWithPyeong(areaM2: number): string {
+  return `${formatArea(areaM2)} · ${formatPyeong(areaM2)}`;
 }
 
 export function formatFloor(floor: number | null): string | null {

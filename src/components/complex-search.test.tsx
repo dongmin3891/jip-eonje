@@ -14,5 +14,10 @@ describe("ComplexSearch", () => {
 
     fireEvent.change(input, { target: { value: "zzzz-none" } });
     expect(screen.getByRole("status")).toHaveTextContent("해당하는 단지가 없습니다.");
+
+    fireEvent.click(screen.getByRole("button", { name: "검색어 지우기" }));
+    expect(input).toHaveValue("");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "검색어 지우기" })).not.toBeInTheDocument();
   });
 });

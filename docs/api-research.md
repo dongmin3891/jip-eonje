@@ -74,9 +74,7 @@
 - [SH 오픈 API 안내](https://www.i-sh.co.kr/app/lay2/program/S1T437C440/open/govern/openData/openApi/openDataInfoView.do) 에는 채용, 상가·공장, 토지, 임대·분양 공고, 계약 등이 있고 공가·대기자는 없다.
 - 마이홈 예비입주자 대기(공공데이터포털 15108378, `HWSPR03/moveWaitStsList`)는 입주대기자와 퇴거는 있으나 공가 수와 기준일이 없다. SH 단지가 결과에 있는지는 키 없이 확인하지 않아 이 MVP에서는 쓰지 않는다.
 
-대신 [SH 주택정보](https://www.i-sh.co.kr/houseinfo/main/selectFromMain.do) 링크를 둔다. 2026-11-13 응답은 HTTP 200이었다. 재개발 공가 화면은 긁지 않는다.
-
-접근 코드는 `src/lib/sh/status.ts` 와 `GET /api/sh-status` 에만 있다. 지금은 `supported: false` 와 링크, 확인일을 돌려준다.
+공가·예비자·퇴거 수는 가져오지 않는다. 내부 API를 호출하거나 화면을 긁지 않는다. 자치구, 단지명, 도로명 주소가 함께 맞는 단지는 `selectHouseImgInfo.do?ctgrCd=10&biznsCd=` 상세페이지로 보내고, 그렇지 않으면 [SH 주택정보](https://www.i-sh.co.kr/houseinfo/main/selectFromMain.do) 메인으로 보낸다. 주소는 `src/data/sh-links.json` 에 있고 `src/lib/sh/link.ts` 가 읽는다.
 
 ## 지도
 

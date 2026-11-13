@@ -6,8 +6,9 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatArea, formatDate, formatFetchedAt, formatFloor, formatManwon } from "@/lib/format";
+import { formatAreaWithPyeong, formatDate, formatFetchedAt, formatFloor, formatManwon } from "@/lib/format";
 import type { Complex } from "@/lib/complexes";
+import { countByArea, mergeAreaKeys } from "@/lib/rent/areas";
 import type { ApiErrorBody, ContractType, RentResponse } from "@/lib/rent/types";
 
 type RentSectionProps = {
@@ -90,9 +91,8 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing }: RentSecti
   }
 
   const contracts = query.data.contracts;
-  const areas = [...new Set(contracts.map((contract) => contract.areaM2.toFixed(2)))].sort(
-    (left, right) => Number(left) - Number(right),
-  );
+  const areas = mergeAreaKeys(query.data.areasM2 ?? [], contracts);
+  const areaCounts = countByArea(contracts);
   const filtered = contracts.filter((contract) => {
     const areaMatches = area === "all" || contract.areaM2.toFixed(2) === area;
     const typeMatches = contractType === "all" || contract.contractType === contractType;
@@ -108,7 +108,8 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing }: RentSecti
           <span className="ml-1 text-lg font-medium">건</span>
         </p>
         <p className="mt-1 text-xs leading-5 text-neutral-500">
-          이 건수는 당첨이나 입주 인원이 아닙니다. {formatDate(from)} – {formatDate(to)}
+          이 건수는 당첨이나 입주 인원이 아닙니다. 오늘 계약은 다음날에 집계됩니다.{" "}
+          {formatDate(from)} – {formatDate(to)}
         </p>
       </div>
 
@@ -126,7 +127,7 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing }: RentSecti
           <option value="all">전체</option>
           {areas.map((value) => (
             <option key={value} value={value}>
-              {value}㎡
+              {formatAreaWithPyeong(Number(value))} · {areaCounts.get(value) ?? 0}건
             </option>
           ))}
         </select>
@@ -167,10 +168,10 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing }: RentSecti
                   ) : null}
                 </div>
                 <p className="mt-1 text-sm text-neutral-700">
-                  {formatArea(contract.areaM2)}
+                  {formatAreaWithPyeong(contract.areaM2)}
                   {floor ? ` · ${floor}` : ""}
                 </p>
-                <p className="mt-1 text-sm text-neutral-900">
+                <p className="mt-1 text-sm text-neutral-900 tabular-nums">
                   보증금 {formatManwon(contract.depositManwon)} · 월세{" "}
                   {formatManwon(contract.monthlyRentManwon)}
                 </p>

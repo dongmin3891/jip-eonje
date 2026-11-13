@@ -6,11 +6,16 @@ import { Input } from "@/components/ui/input";
 import { searchComplexes, type Complex } from "@/lib/complexes";
 
 type ComplexSearchProps = {
+  initialQuery?: string;
   onSelect: (complex: Complex) => void;
 };
 
-export function ComplexSearch({ onSelect }: ComplexSearchProps) {
-  const [query, setQuery] = useState("");
+export function ComplexSearch({ initialQuery = "", onSelect }: ComplexSearchProps) {
+  const [query, setQuery] = useState(initialQuery);
+
+  useEffect(() => {
+    if (initialQuery) setQuery(initialQuery);
+  }, [initialQuery]);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
@@ -30,6 +35,11 @@ export function ComplexSearch({ onSelect }: ComplexSearchProps) {
     onSelect(complex);
   }
 
+  function clearQuery() {
+    setQuery("");
+    setOpen(false);
+  }
+
   return (
     <div ref={rootRef} className="relative">
       <Input
@@ -39,6 +49,7 @@ export function ComplexSearch({ onSelect }: ComplexSearchProps) {
         aria-autocomplete="list"
         aria-label="단지명 또는 지역 검색"
         placeholder="단지명, 자치구, 동"
+        className={query ? "h-10 pr-10 text-base" : "h-10 text-base"}
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
@@ -53,11 +64,30 @@ export function ComplexSearch({ onSelect }: ComplexSearchProps) {
           }
         }}
       />
+      {query ? (
+        <button
+          type="button"
+          aria-label="검색어 지우기"
+          className="absolute top-1/2 right-1.5 grid size-7 -translate-y-1/2 place-items-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={clearQuery}
+        >
+          <svg viewBox="0 0 16 16" className="size-3.5" aria-hidden="true">
+            <path
+              d="M4 4l8 8M12 4l-8 8"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      ) : null}
       {open && query.trim() ? (
         <div
           id={listId}
           role="listbox"
-          className="absolute top-full z-30 mt-1 max-h-80 w-full overflow-auto rounded-lg border border-neutral-200 bg-white shadow-lg"
+          className="absolute top-full z-30 mt-1 max-h-80 w-full overflow-auto overscroll-contain rounded-xl border border-black/10 bg-white shadow-[0_8px_24px_oklch(0_0_0/0.08)]"
         >
           {results.length === 0 ? (
             <p className="px-3 py-3 text-sm text-neutral-500" role="status">
