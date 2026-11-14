@@ -7,6 +7,7 @@ describe("단지 목록", () => {
     expect(complexMeta.complexList.referenceDate).toBe("2025-12-31");
     expect(complexMeta.complexList.datasetId).toBe("OA-12027");
     expect(complexes.every((complex) => complex.housingType.includes("행복"))).toBe(true);
+    expect(complexes.every((complex) => Array.isArray(complex.areasM2))).toBe(true);
     expect(complexMeta.counts.withCoordinates).toBe(153);
     expect(complexMeta.counts.withoutCoordinates).toBe(66);
   });

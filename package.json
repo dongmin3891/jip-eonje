@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "data:complexes": "node scripts/build-complexes.mjs"
+    "data:complexes": "node scripts/build-complexes.mjs",
+    "data:areas": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/build-rent-areas.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

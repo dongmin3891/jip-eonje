@@ -251,10 +251,10 @@ async function geocodeWithKakao(complex, apiKey) {
   return { lat: Number(doc.y), lng: Number(doc.x), source: "kakao-geocode" };
 }
 
-async function loadPreviousKakaoCoordinates() {
+async function loadPreviousComplexes() {
   try {
     const previous = JSON.parse(await readFile(OUT_FILE, "utf8"));
-    return new Map(previous.filter((c) => c.coordSource === "kakao-geocode").map((c) => [c.id, c]));
+    return new Map(previous.map((complex) => [complex.id, complex]));
   } catch {
     return new Map();
   }
@@ -264,10 +264,10 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const kakaoKey = process.env.KAKAO_REST_API_KEY;
 
-  const [{ sheetName, rows }, kaptRows, previousKakao] = await Promise.all([
+  const [{ sheetName, rows }, kaptRows, previousComplexes] = await Promise.all([
     loadShWorkbook(args["sh-file"]),
     loadKaptRows(args["kapt-file"]),
-    loadPreviousKakaoCoordinates(),
+    loadPreviousComplexes(),
   ]);
 
   const [header, ...dataRows] = rows;
@@ -288,8 +288,9 @@ async function main() {
     const id = createHash("sha1").update(`${district}|${base.name}|${address}`).digest("hex").slice(0, 10);
 
     let coordinate = findKaptCoordinate(base, kaptIndex);
-    if (!coordinate && previousKakao.has(id)) {
-      const kept = previousKakao.get(id);
+    const previous = previousComplexes.get(id);
+    if (!coordinate && previous?.coordSource === "kakao-geocode") {
+      const kept = previous;
       coordinate = { lat: kept.lat, lng: kept.lng, source: "kakao-geocode" };
     }
     if (!coordinate && kakaoKey) coordinate = await geocodeWithKakao(base, kakaoKey);
@@ -311,6 +312,7 @@ async function main() {
       lat: coordinate?.lat ?? null,
       lng: coordinate?.lng ?? null,
       coordSource: coordinate?.source ?? null,
+      areasM2: Array.isArray(previous?.areasM2) ? previous.areasM2 : [],
     });
   }
 

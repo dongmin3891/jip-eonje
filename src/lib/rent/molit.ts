@@ -1,14 +1,12 @@
 import "server-only";
 
 import type { Complex } from "@/lib/complexes";
-import { areaKey } from "@/lib/rent/areas";
 import { matchesComplex } from "@/lib/rent/match";
+import { fetchMolitMonth } from "@/lib/rent/molit-client";
 import { isRecentMonth } from "@/lib/rent/period";
-import { MolitError, parseMolitXml, type PublicDeal } from "@/lib/rent/parse";
-import { MOLIT_ENDPOINT, type RentContract } from "@/lib/rent/types";
+import type { PublicDeal } from "@/lib/rent/parse";
+import type { RentContract } from "@/lib/rent/types";
 
-const PAGE_SIZE = 1000;
-const MAX_PAGES = 30;
 const RECENT_TTL_MS = 6 * 60 * 60 * 1000;
 const STABLE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MONTH_CONCURRENCY = 4;
@@ -18,71 +16,6 @@ type CacheEntry = { expires: number; items: PublicDeal[] };
 const monthCache = new Map<string, CacheEntry>();
 const inFlight = new Map<string, Promise<PublicDeal[]>>();
 
-/** 인코딩된 키는 한 번만 풀고, URLSearchParams가 다시 인코딩하게 둔다. */
-export function decodeServiceKey(raw: string): string {
-  const key = raw.trim();
-  if (!key.includes("%")) return key;
-  try {
-    return decodeURIComponent(key);
-  } catch {
-    return key;
-  }
-}
-
-async function fetchPage(
-  lawdCd: string,
-  yyyymm: string,
-  pageNo: number,
-  serviceKey: string,
-): Promise<{ items: PublicDeal[]; totalCount: number }> {
-  const params = new URLSearchParams({
-    serviceKey: decodeServiceKey(serviceKey),
-    LAWD_CD: lawdCd,
-    DEAL_YMD: yyyymm,
-    pageNo: String(pageNo),
-    numOfRows: String(PAGE_SIZE),
-  });
-
-  let response: Response;
-  try {
-    response = await fetch(`${MOLIT_ENDPOINT}?${params}`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
-  } catch (error) {
-    const name = error instanceof Error ? error.name : "";
-    if (name === "TimeoutError" || name === "AbortError") {
-      throw new MolitError("UPSTREAM", "실거래 조회 시간이 초과되었습니다.");
-    }
-    throw new MolitError("UPSTREAM", "실거래 서버에 연결하지 못했습니다.");
-  }
-
-  if (response.status === 401 || response.status === 403) {
-    throw new MolitError("KEY_INVALID", "공공데이터포털 인증키가 거부되었습니다.");
-  }
-  if (!response.ok) {
-    throw new MolitError("UPSTREAM", `실거래 조회에 실패했습니다. (${response.status})`);
-  }
-
-  const xml = await response.text();
-  const page = parseMolitXml(xml);
-  return { items: page.items, totalCount: page.totalCount };
-}
-
-async function loadMonth(lawdCd: string, yyyymm: string, serviceKey: string): Promise<PublicDeal[]> {
-  const first = await fetchPage(lawdCd, yyyymm, 1, serviceKey);
-  const pages = first.totalCount === 0 ? 1 : Math.ceil(first.totalCount / PAGE_SIZE);
-  if (pages > MAX_PAGES) {
-    throw new MolitError("UPSTREAM", "한 달 조회 결과가 너무 많아 모두 가져오지 못했습니다.");
-  }
-  const items = [...first.items];
-  for (let page = 2; page <= pages; page += 1) {
-    const next = await fetchPage(lawdCd, yyyymm, page, serviceKey);
-    items.push(...next.items);
-  }
-  return items;
-}
-
 async function fetchMonth(lawdCd: string, yyyymm: string, serviceKey: string): Promise<PublicDeal[]> {
   const cacheKey = `${lawdCd}:${yyyymm}`;
   const cached = monthCache.get(cacheKey);
@@ -91,7 +24,7 @@ async function fetchMonth(lawdCd: string, yyyymm: string, serviceKey: string): P
   const pending = inFlight.get(cacheKey);
   if (pending) return pending;
 
-  const request = loadMonth(lawdCd, yyyymm, serviceKey)
+  const request = fetchMolitMonth(lawdCd, yyyymm, serviceKey)
     .then((items) => {
       const ttl = isRecentMonth(yyyymm) ? RECENT_TTL_MS : STABLE_TTL_MS;
       monthCache.set(cacheKey, { items, expires: Date.now() + ttl });
@@ -173,16 +106,4 @@ export async function getRentContracts(
 
   const matchedAptNames = [...new Set(matched.map((deal) => deal.aptNm).filter(Boolean))];
   return { contracts, matchedAptNames };
-}
-
-/** 최근 36개월 등 지정한 월 목록에서 단지의 전용면적만 모은다. 월별 캐시와 in-flight 요청은 계약 조회와 공유한다. */
-export async function getRentAreas(
-  complex: Complex,
-  months: string[],
-  serviceKey: string,
-): Promise<number[]> {
-  const complexDeals = await getComplexDeals(complex, months, serviceKey);
-  return [...new Set(complexDeals.map((deal) => areaKey(deal.areaM2)))]
-    .sort((left, right) => Number(left) - Number(right))
-    .map(Number);
 }

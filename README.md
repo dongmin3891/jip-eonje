@@ -24,11 +24,13 @@ npm start
 
 단지 목록을 공식 원본에서 다시 만들려면 `npm run data:complexes` 를 실행합니다. 좌표가 없는 단지를 카카오 주소검색으로 채우려면 `KAKAO_REST_API_KEY` 가 있어야 합니다. 키가 없으면 좌표를 추정하지 않습니다.
 
+단지별 전용면적 카탈로그는 `npm run data:areas` 로 갱신합니다. 이 명령만 최근 36개월 국토부 데이터를 `법정구 코드 × 계약월` 단위로 받아 `src/data/complexes.json`의 `areasM2`에 합칩니다. 앱의 `/api/rent/areas`는 이 정적 값만 반환하므로 사용자 요청 중 36개월 조회를 실행하지 않습니다.
+
 ## 환경변수
 
 | 이름 | 어디서 | 용도 |
 | --- | --- | --- |
-| `DATA_GO_KR_SERVICE_KEY` | 서버 | 국토부 아파트 전월세 실거래 |
+| `DATA_GO_KR_SERVICE_KEY` | 서버·면적 생성 스크립트 | 국토부 아파트 전월세 실거래 |
 | `KAKAO_MAP_JS_KEY` | 서버에서 읽어 지도 SDK에 전달 | 카카오맵. `NEXT_PUBLIC_` 로 두지 않는다 |
 | `KAKAO_REST_API_KEY` | 목록 생성 스크립트 | 선택. 좌표 보완용 지오코딩 |
 
@@ -38,7 +40,8 @@ npm start
 
 1. [아파트 전월세 실거래가 자료](https://www.data.go.kr/data/15126474/openapi.do) 에서 활용신청을 합니다.
 2. 일반 인증키(인코딩 또는 디코딩)를 `DATA_GO_KR_SERVICE_KEY` 에 넣습니다.
-3. 개발계정은 트래픽 제한이 있습니다. 최근 두 달은 6시간, 그 이전 달은 7일 동안 서버 메모리에 캐시합니다. 같은 클라이언트는 1분에 20번까지 조회할 수 있습니다.
+3. 개발계정은 트래픽 제한이 있습니다. 런타임 계약 조회는 최근 두 달을 6시간, 그 이전 달을 7일 동안 서버 메모리에 캐시합니다. 같은 클라이언트는 1분에 20번까지 조회할 수 있습니다.
+4. 전용면적을 갱신할 때는 `.env.local`에 키를 둔 뒤 `npm run data:areas`를 실행합니다. 실패하면 `lawdCd`와 계약월이 출력되며, 모든 요청이 끝난 뒤에만 JSON을 저장합니다.
 
 ### 카카오맵 키
 
@@ -71,6 +74,7 @@ REST API 키는 지도와 별개입니다. 좌표가 비어 있는 단지를 채
 
 ```
 scripts/build-complexes.mjs   공식 원본으로 단지 목록 생성
+scripts/build-rent-areas.ts   최근 36개월 계약으로 단지별 전용면적 생성
 src/data/                     생성된 단지와 기준일
 src/lib/rent/                 기간, XML 파싱, 주소 매칭, 국토부 호출
 src/lib/sh/link.ts            단지별 SH 공식 주택정보 주소

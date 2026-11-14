@@ -19,6 +19,7 @@ const complex: Complex = {
   lat: null,
   lng: null,
   coordSource: null,
+  areasM2: [],
 };
 
 function deal(overrides: Partial<PublicDeal> = {}): PublicDeal {

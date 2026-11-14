@@ -29,7 +29,7 @@ export type RentResponse = {
 
 export type RentAreasResponse = {
   complexId: string;
-  /** 최근 36개월 계약에서 발견한 전용면적. */
+  /** 사전 생성된 최근 36개월 기반 전용면적 카탈로그. */
   areasM2: number[];
   fetchedAt: string;
 };

@@ -15,7 +15,8 @@
     "buildingName": null,
     "lat": 37.500586,
     "lng": 127.04579317,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "f82df3dce1",
@@ -33,7 +34,8 @@
     "buildingName": null,
     "lat": 37.47848,
     "lng": 127.054031,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "0866f38c73",
@@ -51,7 +53,8 @@
     "buildingName": null,
     "lat": 37.4851097,
     "lng": 127.0716098,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "cda81ce945",
@@ -69,7 +72,8 @@
     "buildingName": null,
     "lat": 37.5022037,
     "lng": 127.0605396,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "2069e93dff",
@@ -87,7 +91,8 @@
     "buildingName": null,
     "lat": 37.485247196,
     "lng": 127.066481237,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "2e85f15be4",
@@ -105,7 +110,8 @@
     "buildingName": null,
     "lat": 37.490791,
     "lng": 127.075083,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "5779ea61be",
@@ -123,7 +129,8 @@
     "buildingName": null,
     "lat": 37.4800022,
     "lng": 127.0585214,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "3a75b6d8b7",
@@ -141,7 +148,8 @@
     "buildingName": null,
     "lat": 37.490232,
     "lng": 127.078684,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "cc3c0d1970",
@@ -159,7 +167,8 @@
     "buildingName": null,
     "lat": 37.489499473,
     "lng": 127.07887144,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "eb62734ab0",
@@ -177,7 +186,8 @@
     "buildingName": null,
     "lat": 37.5177334,
     "lng": 127.0481649,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d502b48909",
@@ -195,7 +205,8 @@
     "buildingName": null,
     "lat": 37.480048959,
     "lng": 127.06415056,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "1fc3cca4e9",
@@ -213,7 +224,8 @@
     "buildingName": null,
     "lat": 37.5016593,
     "lng": 127.0624654,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "b86b6d133b",
@@ -231,7 +243,8 @@
     "buildingName": "센트럴아이파크",
     "lat": 37.51579097,
     "lng": 127.051321691,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "45e8591f50",
@@ -249,7 +262,8 @@
     "buildingName": null,
     "lat": 37.554724,
     "lng": 127.144817,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "39b00f6295",
@@ -267,7 +281,8 @@
     "buildingName": null,
     "lat": 37.554724,
     "lng": 127.144817,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "bd50c62133",
@@ -285,7 +300,8 @@
     "buildingName": "강일리버파크11단지",
     "lat": 37.562219987,
     "lng": 127.179448401,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "2ab2fead5b",
@@ -303,7 +319,8 @@
     "buildingName": null,
     "lat": 37.556179683,
     "lng": 127.159176172,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "49ade89dab",
@@ -321,7 +338,8 @@
     "buildingName": null,
     "lat": 37.5522344,
     "lng": 127.1669237,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "37d906cf59",
@@ -339,7 +357,8 @@
     "buildingName": null,
     "lat": 37.557703,
     "lng": 127.17017,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "be143c5203",
@@ -357,7 +376,8 @@
     "buildingName": null,
     "lat": 37.5550952,
     "lng": 127.1685346,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "7b55e25e36",
@@ -375,7 +395,8 @@
     "buildingName": null,
     "lat": 37.5627622,
     "lng": 127.1708365,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "3d6c4ac94a",
@@ -393,7 +414,8 @@
     "buildingName": null,
     "lat": 37.552393,
     "lng": 127.1708,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "71a92ef42f",
@@ -411,7 +433,8 @@
     "buildingName": null,
     "lat": 37.552949018,
     "lng": 127.144621707,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "313811c601",
@@ -429,7 +452,8 @@
     "buildingName": null,
     "lat": 37.549416,
     "lng": 127.167612,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "50e72ce0f2",
@@ -447,7 +471,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4b102ee87b",
@@ -465,7 +490,8 @@
     "buildingName": null,
     "lat": 37.542051,
     "lng": 127.126208,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "32bdaf53ee",
@@ -483,7 +509,8 @@
     "buildingName": null,
     "lat": 37.541198,
     "lng": 127.148197,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "19763fa29c",
@@ -501,7 +528,8 @@
     "buildingName": "꿈의숲 롯데캐슬",
     "lat": 37.617159235,
     "lng": 127.035613592,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "748b4e5ff9",
@@ -519,7 +547,8 @@
     "buildingName": null,
     "lat": 37.620054492,
     "lng": 127.033597012,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "eb04722a33",
@@ -537,7 +566,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "15429af24b",
@@ -555,7 +585,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "9cd60817b7",
@@ -573,7 +604,8 @@
     "buildingName": null,
     "lat": 37.6274551,
     "lng": 127.0186259,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "b2e56635ec",
@@ -591,7 +623,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "359ea89e56",
@@ -609,7 +642,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "9f8dc7bf46",
@@ -627,7 +661,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "e0dae387ae",
@@ -645,7 +680,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4c99b14341",
@@ -663,7 +699,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "f9fec405ca",
@@ -681,7 +718,8 @@
     "buildingName": null,
     "lat": 37.571185,
     "lng": 126.808283,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "56ad9ee309",
@@ -699,7 +737,8 @@
     "buildingName": null,
     "lat": 37.54859928,
     "lng": 126.870265346,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "cf607463f5",
@@ -717,7 +756,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "e4dc2affdc",
@@ -735,7 +775,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "1d3a441738",
@@ -753,7 +794,8 @@
     "buildingName": null,
     "lat": 37.478089,
     "lng": 126.942051,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "1e9f412b62",
@@ -771,7 +813,8 @@
     "buildingName": null,
     "lat": 37.484267,
     "lng": 126.90515,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "1215d3b907",
@@ -789,7 +832,8 @@
     "buildingName": null,
     "lat": 37.478692081,
     "lng": 126.943882579,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "ad1ed1e494",
@@ -807,7 +851,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "cb15d97907",
@@ -825,7 +870,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "087cde59e0",
@@ -843,7 +889,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "9748d6d249",
@@ -861,7 +908,8 @@
     "buildingName": null,
     "lat": 37.5378925,
     "lng": 127.0627946,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "a4c18bcd67",
@@ -879,7 +927,8 @@
     "buildingName": null,
     "lat": 37.5354016,
     "lng": 127.088713,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "992027c7d4",
@@ -897,7 +946,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "5a00fa794a",
@@ -915,7 +965,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "8bb6763a6f",
@@ -933,7 +984,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "b4f8b85300",
@@ -951,7 +1003,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4fc7d02d70",
@@ -969,7 +1022,8 @@
     "buildingName": "고척리본타운",
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "47e3aaa7fb",
@@ -987,7 +1041,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "d9768f14e1",
@@ -1005,7 +1060,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "be012ea4bb",
@@ -1023,7 +1079,8 @@
     "buildingName": "천왕연지마을1단지",
     "lat": 37.48817847,
     "lng": 126.841255317,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "01b033d8c3",
@@ -1041,7 +1098,8 @@
     "buildingName": "천왕연지마을2단지",
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "5a6e012a23",
@@ -1059,7 +1117,8 @@
     "buildingName": null,
     "lat": 37.476003774,
     "lng": 126.84231695,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d25e80f8f9",
@@ -1077,7 +1136,8 @@
     "buildingName": "천왕이펜하우스7단지",
     "lat": 37.482105564,
     "lng": 126.836853061,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "46692ce7d1",
@@ -1095,7 +1155,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "c988fa5258",
@@ -1113,7 +1174,8 @@
     "buildingName": null,
     "lat": 37.479401069,
     "lng": 126.825805093,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "73ca59169d",
@@ -1131,7 +1193,8 @@
     "buildingName": null,
     "lat": 37.478041119,
     "lng": 126.822333559,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "eb03e7c8e6",
@@ -1149,7 +1212,8 @@
     "buildingName": null,
     "lat": 37.480351765,
     "lng": 126.825844074,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "6e3805583e",
@@ -1167,7 +1231,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "6e664b8e62",
@@ -1185,7 +1250,8 @@
     "buildingName": null,
     "lat": 37.665157,
     "lng": 127.074769,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "32d6e466ba",
@@ -1203,7 +1269,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "7a335119f9",
@@ -1221,7 +1288,8 @@
     "buildingName": null,
     "lat": 37.630376,
     "lng": 127.057208,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "4a2fdc557e",
@@ -1239,7 +1307,8 @@
     "buildingName": null,
     "lat": 37.6260014,
     "lng": 127.0815267,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "19f23a4131",
@@ -1257,7 +1326,8 @@
     "buildingName": null,
     "lat": 37.66397,
     "lng": 127.0621436,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "39b69e52c2",
@@ -1275,7 +1345,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "b2a9610761",
@@ -1293,7 +1364,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4f95d896f4",
@@ -1311,7 +1383,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "febc735f27",
@@ -1329,7 +1402,8 @@
     "buildingName": null,
     "lat": 37.567783872,
     "lng": 127.058400876,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "adcf19396b",
@@ -1347,7 +1421,8 @@
     "buildingName": null,
     "lat": 37.575066938,
     "lng": 127.07036542,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "a73f7539c1",
@@ -1365,7 +1440,8 @@
     "buildingName": null,
     "lat": 37.579598,
     "lng": 127.028506,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d53843ff9c",
@@ -1383,7 +1459,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "a45125408c",
@@ -1401,7 +1478,8 @@
     "buildingName": null,
     "lat": 37.5984489,
     "lng": 127.0627196,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "baf21fab58",
@@ -1419,7 +1497,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "199773244b",
@@ -1437,7 +1516,8 @@
     "buildingName": null,
     "lat": 37.5917875,
     "lng": 127.0612564,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "7ac6bde432",
@@ -1455,7 +1535,8 @@
     "buildingName": null,
     "lat": 37.591618,
     "lng": 127.062659,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "96317d1a3e",
@@ -1473,7 +1554,8 @@
     "buildingName": null,
     "lat": 37.594160229,
     "lng": 127.064956942,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "91d3d882f8",
@@ -1491,7 +1573,8 @@
     "buildingName": "힐스테이트청계",
     "lat": 37.571541735,
     "lng": 127.046194211,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "c06d0b69bd",
@@ -1509,7 +1592,8 @@
     "buildingName": null,
     "lat": 37.5771451,
     "lng": 127.0387062,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "6f8e016dc9",
@@ -1527,7 +1611,8 @@
     "buildingName": null,
     "lat": 37.57198,
     "lng": 127.0289736,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "6dd045f586",
@@ -1545,7 +1630,8 @@
     "buildingName": "래미안로이파크",
     "lat": 37.487543475,
     "lng": 126.974221693,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "e0fc76b341",
@@ -1563,7 +1649,8 @@
     "buildingName": null,
     "lat": 37.4985576,
     "lng": 126.9253834,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "0baaabe568",
@@ -1581,7 +1668,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "0954e5cf23",
@@ -1599,7 +1687,8 @@
     "buildingName": "아크로리버하임",
     "lat": 37.509655803,
     "lng": 126.962350726,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d9fed57757",
@@ -1617,7 +1706,8 @@
     "buildingName": null,
     "lat": 37.504188897,
     "lng": 126.960357717,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "161a07c8d2",
@@ -1635,7 +1725,8 @@
     "buildingName": null,
     "lat": 37.4930871,
     "lng": 126.9779437,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "e4f93a27e6",
@@ -1653,7 +1744,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "b0ccc752b5",
@@ -1671,7 +1763,8 @@
     "buildingName": null,
     "lat": 37.50499309,
     "lng": 126.94679107,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "b826e915b8",
@@ -1689,7 +1782,8 @@
     "buildingName": null,
     "lat": 37.5466768,
     "lng": 126.9497275,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "cd958737d0",
@@ -1707,7 +1801,8 @@
     "buildingName": null,
     "lat": 37.5451058,
     "lng": 126.9492355,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "ea5756b3c9",
@@ -1725,7 +1820,8 @@
     "buildingName": null,
     "lat": 37.550355,
     "lng": 126.931163,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "8a3b98ab17",
@@ -1743,7 +1839,8 @@
     "buildingName": null,
     "lat": 37.55557,
     "lng": 126.94451,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9a9110f5a7",
@@ -1761,7 +1858,8 @@
     "buildingName": null,
     "lat": 37.5561542,
     "lng": 126.9488538,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "21af6e280d",
@@ -1779,7 +1877,8 @@
     "buildingName": null,
     "lat": 37.55027258,
     "lng": 126.946612479,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "498d549e81",
@@ -1797,7 +1896,8 @@
     "buildingName": null,
     "lat": 37.5545455,
     "lng": 126.9564486,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "1302c1d194",
@@ -1815,7 +1915,8 @@
     "buildingName": null,
     "lat": 37.553719,
     "lng": 126.947802,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9ccd0a3d9a",
@@ -1833,7 +1934,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "d5504826d6",
@@ -1851,7 +1953,8 @@
     "buildingName": null,
     "lat": 37.551036,
     "lng": 126.934264,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "92864f0e21",
@@ -1869,7 +1972,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "244c9735ea",
@@ -1887,7 +1991,8 @@
     "buildingName": null,
     "lat": 37.5755277,
     "lng": 126.9162819,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "3711ad92d9",
@@ -1905,7 +2010,8 @@
     "buildingName": null,
     "lat": 37.598029,
     "lng": 126.945723,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9f0ad53b1c",
@@ -1923,7 +2029,8 @@
     "buildingName": null,
     "lat": 37.600043,
     "lng": 126.944439,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d54481a44c",
@@ -1941,7 +2048,8 @@
     "buildingName": null,
     "lat": 37.6007393,
     "lng": 126.9472679,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "6ddc27e03c",
@@ -1959,7 +2067,8 @@
     "buildingName": null,
     "lat": 37.5815054,
     "lng": 126.9503248,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "7201951018",
@@ -1977,7 +2086,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4f0692f257",
@@ -1995,7 +2105,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "44214bdb17",
@@ -2013,7 +2124,8 @@
     "buildingName": null,
     "lat": 37.575124758,
     "lng": 126.927472341,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "aaf4ba560c",
@@ -2031,7 +2143,8 @@
     "buildingName": null,
     "lat": 37.584634483,
     "lng": 126.944466153,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "a100090e9c",
@@ -2049,7 +2162,8 @@
     "buildingName": null,
     "lat": 37.590313,
     "lng": 126.947405,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "c1e9b76d18",
@@ -2067,7 +2181,8 @@
     "buildingName": null,
     "lat": 37.562291,
     "lng": 126.951063,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "bbbf842677",
@@ -2085,7 +2200,8 @@
     "buildingName": null,
     "lat": 37.5860638,
     "lng": 126.9256542,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "8db7bc9d47",
@@ -2103,7 +2219,8 @@
     "buildingName": null,
     "lat": 37.580618738,
     "lng": 126.92029671,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d3a6a2350b",
@@ -2121,7 +2238,8 @@
     "buildingName": null,
     "lat": 37.576911,
     "lng": 126.918137,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "fbb845d67c",
@@ -2139,7 +2257,8 @@
     "buildingName": "e편한세상신촌 1단지",
     "lat": 37.558298572,
     "lng": 126.954974315,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "839e4fa15a",
@@ -2157,7 +2276,8 @@
     "buildingName": "서초 선포레",
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "e58b5b61cc",
@@ -2175,7 +2295,8 @@
     "buildingName": null,
     "lat": 37.5007631,
     "lng": 127.010446,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "57c87af0d4",
@@ -2193,7 +2314,8 @@
     "buildingName": null,
     "lat": 37.490773,
     "lng": 127.028121,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9b2d05c3a2",
@@ -2211,7 +2333,8 @@
     "buildingName": "래미안서초에스티지S",
     "lat": 37.492859,
     "lng": 127.027121,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "2ae76b80e9",
@@ -2229,7 +2352,8 @@
     "buildingName": null,
     "lat": 37.517949851,
     "lng": 127.014053646,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "bb5af5f5b9",
@@ -2247,7 +2371,8 @@
     "buildingName": null,
     "lat": 37.5068044,
     "lng": 126.9981867,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "6c39293a6e",
@@ -2265,7 +2390,8 @@
     "buildingName": "반포래미안아이파크",
     "lat": 37.50092246,
     "lng": 127.012560435,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "1dab560a1d",
@@ -2283,7 +2409,8 @@
     "buildingName": null,
     "lat": 37.507594,
     "lng": 127.002832,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "a4c9882d9d",
@@ -2301,7 +2428,8 @@
     "buildingName": null,
     "lat": 37.5088381,
     "lng": 127.0023236,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d4448d8761",
@@ -2319,7 +2447,8 @@
     "buildingName": null,
     "lat": 37.507069,
     "lng": 127.001701,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "0d2c663a08",
@@ -2337,7 +2466,8 @@
     "buildingName": "반포센트럴푸르지오써밋",
     "lat": 37.501311326,
     "lng": 127.017679173,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "261eedd1e8",
@@ -2355,7 +2485,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "83110a5507",
@@ -2373,7 +2504,8 @@
     "buildingName": null,
     "lat": 37.4767899,
     "lng": 126.9962367,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "373e68ef8a",
@@ -2391,7 +2523,8 @@
     "buildingName": null,
     "lat": 37.47933498,
     "lng": 127.002420894,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9cab0c43cc",
@@ -2409,7 +2542,8 @@
     "buildingName": null,
     "lat": 37.489133,
     "lng": 127.025992,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d4621d1cc3",
@@ -2427,7 +2561,8 @@
     "buildingName": null,
     "lat": 37.5169968,
     "lng": 127.0136925,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "8e65146830",
@@ -2445,7 +2580,8 @@
     "buildingName": null,
     "lat": 37.510878519,
     "lng": 127.008290077,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "667836513d",
@@ -2463,7 +2599,8 @@
     "buildingName": "e편한세상금호파크힐스",
     "lat": 37.554065425,
     "lng": 127.02150397,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "8173bc0f1a",
@@ -2481,7 +2618,8 @@
     "buildingName": null,
     "lat": 37.554285428,
     "lng": 127.038322773,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9c45bc8cd0",
@@ -2499,7 +2637,8 @@
     "buildingName": "왕십리자이",
     "lat": 37.561526818,
     "lng": 127.024673339,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "f18be22386",
@@ -2517,7 +2656,8 @@
     "buildingName": null,
     "lat": 37.546449237,
     "lng": 127.025765703,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "7d746e3551",
@@ -2535,7 +2675,8 @@
     "buildingName": null,
     "lat": 37.618675,
     "lng": 127.047983,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "3c925ac8fe",
@@ -2553,7 +2694,8 @@
     "buildingName": "꿈의숲코오롱하늘채아파트",
     "lat": 37.620483346,
     "lng": 127.045902701,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "5331b17938",
@@ -2571,7 +2713,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "be52b80bf5",
@@ -2589,7 +2732,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "672bcbd2c1",
@@ -2607,7 +2751,8 @@
     "buildingName": null,
     "lat": 37.609757966,
     "lng": 127.027970717,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "f442665b48",
@@ -2625,7 +2770,8 @@
     "buildingName": null,
     "lat": 37.606527377,
     "lng": 127.062259791,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "4b0c88c0ae",
@@ -2643,7 +2789,8 @@
     "buildingName": null,
     "lat": 37.61790892,
     "lng": 127.052266283,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "c7665765ed",
@@ -2661,7 +2808,8 @@
     "buildingName": null,
     "lat": 37.608008456,
     "lng": 127.016162695,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "3ef1796b83",
@@ -2679,7 +2827,8 @@
     "buildingName": "보문파크뷰자이",
     "lat": 37.578039998,
     "lng": 127.018504541,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "681378af87",
@@ -2697,7 +2846,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "edda613dde",
@@ -2715,7 +2865,8 @@
     "buildingName": null,
     "lat": 37.587191,
     "lng": 127.019614,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "1d87d09fcc",
@@ -2733,7 +2884,8 @@
     "buildingName": null,
     "lat": 37.613619,
     "lng": 127.0566091,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "a5002dfdda",
@@ -2751,7 +2903,8 @@
     "buildingName": null,
     "lat": 37.620513385,
     "lng": 127.050405109,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "003773643f",
@@ -2769,7 +2922,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "a3d7799889",
@@ -2787,7 +2941,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "97782a6a02",
@@ -2805,7 +2960,8 @@
     "buildingName": null,
     "lat": 37.493915,
     "lng": 127.150756,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "90d28ef23d",
@@ -2823,7 +2979,8 @@
     "buildingName": "거여리본타운",
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "b763955f67",
@@ -2841,7 +2998,8 @@
     "buildingName": null,
     "lat": 37.4958575,
     "lng": 127.146583,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "af1d8027b2",
@@ -2859,7 +3017,8 @@
     "buildingName": "송파파크데일3단지",
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "6d0b675a13",
@@ -2877,7 +3036,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "9dbf26a0eb",
@@ -2895,7 +3055,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "f30be70636",
@@ -2913,7 +3074,8 @@
     "buildingName": null,
     "lat": 37.497609869,
     "lng": 127.10249742,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "11e7f03690",
@@ -2931,7 +3093,8 @@
     "buildingName": null,
     "lat": 37.5255442,
     "lng": 127.1143162,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "6bb1ddd0fd",
@@ -2949,7 +3112,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "b20f5a33ad",
@@ -2967,7 +3131,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "489fe3a133",
@@ -2985,7 +3150,8 @@
     "buildingName": null,
     "lat": 37.5231839,
     "lng": 126.8439844,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "4785f64e93",
@@ -3003,7 +3169,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "a198a342e2",
@@ -3021,7 +3188,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "e61317f2fd",
@@ -3039,7 +3207,8 @@
     "buildingName": null,
     "lat": 37.516804,
     "lng": 126.843516,
-    "coordSource": "kapt-name"
+    "coordSource": "kapt-name",
+    "areasM2": []
   },
   {
     "id": "fab127bc7e",
@@ -3057,7 +3226,8 @@
     "buildingName": null,
     "lat": 37.513049405,
     "lng": 126.833734146,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "51fe862121",
@@ -3075,7 +3245,8 @@
     "buildingName": null,
     "lat": 37.51643,
     "lng": 126.852912,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "2dea06e6fb",
@@ -3093,7 +3264,8 @@
     "buildingName": null,
     "lat": 37.494512,
     "lng": 126.906944,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "54d9eabf00",
@@ -3111,7 +3283,8 @@
     "buildingName": null,
     "lat": 37.507791,
     "lng": 126.916553,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "7ac1425eef",
@@ -3129,7 +3302,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "35f4a9e117",
@@ -3147,7 +3321,8 @@
     "buildingName": null,
     "lat": 37.5299889,
     "lng": 126.9027572,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "589e35511f",
@@ -3165,7 +3340,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "eeaf1c5a89",
@@ -3183,7 +3359,8 @@
     "buildingName": null,
     "lat": 37.503061,
     "lng": 126.907757,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "4d0e16dba7",
@@ -3201,7 +3378,8 @@
     "buildingName": null,
     "lat": 37.504119233,
     "lng": 126.903760265,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "4758a6fba8",
@@ -3219,7 +3397,8 @@
     "buildingName": null,
     "lat": 37.5011629,
     "lng": 126.9151097,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "0c0712f792",
@@ -3237,7 +3416,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "9bf79ac332",
@@ -3255,7 +3435,8 @@
     "buildingName": "아크로타워 스퀘어",
     "lat": 37.522935232,
     "lng": 126.908306473,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "1046227b67",
@@ -3273,7 +3454,8 @@
     "buildingName": null,
     "lat": 37.539018916,
     "lng": 126.96409798,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "f83e4cca24",
@@ -3291,7 +3473,8 @@
     "buildingName": null,
     "lat": 37.526093,
     "lng": 126.967663,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "cba625ca68",
@@ -3309,7 +3492,8 @@
     "buildingName": null,
     "lat": 37.548159,
     "lng": 126.962886,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "d9edf0e65c",
@@ -3327,7 +3511,8 @@
     "buildingName": null,
     "lat": 37.599269,
     "lng": 126.932044,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "e6c984f336",
@@ -3345,7 +3530,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "c597c391c4",
@@ -3363,7 +3549,8 @@
     "buildingName": null,
     "lat": 37.602836004,
     "lng": 126.935970375,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "4bac0a762c",
@@ -3381,7 +3568,8 @@
     "buildingName": null,
     "lat": 37.595215907,
     "lng": 126.919438125,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "7e0b61b7a7",
@@ -3399,7 +3587,8 @@
     "buildingName": null,
     "lat": 37.592799845,
     "lng": 126.921501443,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "46f90d69ec",
@@ -3417,7 +3606,8 @@
     "buildingName": null,
     "lat": 37.596311,
     "lng": 126.92186,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "9debae6361",
@@ -3435,7 +3625,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "91843dfa30",
@@ -3453,7 +3644,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "3a2a59c7bf",
@@ -3471,7 +3663,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "7aa0bfe18b",
@@ -3489,7 +3682,8 @@
     "buildingName": null,
     "lat": 37.630176147,
     "lng": 126.919916212,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "77ee8992b3",
@@ -3507,7 +3701,8 @@
     "buildingName": null,
     "lat": 37.59835762,
     "lng": 126.909238193,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "788b58e46e",
@@ -3525,7 +3720,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "da9b1f0386",
@@ -3543,7 +3739,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "76e73df558",
@@ -3561,7 +3758,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "ef052f991b",
@@ -3579,7 +3777,8 @@
     "buildingName": null,
     "lat": 37.601971055,
     "lng": 126.935863683,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "31cc28dcc7",
@@ -3597,7 +3796,8 @@
     "buildingName": null,
     "lat": 37.59962,
     "lng": 126.934656,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "5b71ff4dac",
@@ -3615,7 +3815,8 @@
     "buildingName": null,
     "lat": 37.5810965,
     "lng": 126.8959227,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "693a714e83",
@@ -3633,7 +3834,8 @@
     "buildingName": null,
     "lat": 37.5864629,
     "lng": 126.8932295,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "fed9addded",
@@ -3651,7 +3853,8 @@
     "buildingName": null,
     "lat": 37.584794,
     "lng": 126.891951,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "42dd2717c8",
@@ -3669,7 +3872,8 @@
     "buildingName": null,
     "lat": 37.58032,
     "lng": 126.9025224,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "2813d1c546",
@@ -3687,7 +3891,8 @@
     "buildingName": null,
     "lat": 37.58032,
     "lng": 126.9025224,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "730ea08faa",
@@ -3705,7 +3910,8 @@
     "buildingName": "경희궁자이 1단지",
     "lat": 37.572234844,
     "lng": 126.964497043,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "0e3114f03a",
@@ -3723,7 +3929,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "cc8582455c",
@@ -3741,7 +3948,8 @@
     "buildingName": null,
     "lat": 37.554609078,
     "lng": 126.963095629,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "5aa343b0d9",
@@ -3759,7 +3967,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4d95094aa7",
@@ -3777,7 +3986,8 @@
     "buildingName": null,
     "lat": 37.58231,
     "lng": 127.078897,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "10ff4cefc4",
@@ -3795,7 +4005,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "e7628a4afb",
@@ -3813,7 +4024,8 @@
     "buildingName": null,
     "lat": 37.582679,
     "lng": 127.081924,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "ff76922198",
@@ -3831,7 +4043,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "c91c474e9a",
@@ -3849,7 +4062,8 @@
     "buildingName": null,
     "lat": 37.6169184,
     "lng": 127.0935671,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "142616e5db",
@@ -3867,7 +4081,8 @@
     "buildingName": null,
     "lat": 37.5855607,
     "lng": 127.0957516,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "a65fcd9913",
@@ -3885,7 +4100,8 @@
     "buildingName": null,
     "lat": 37.616754293,
     "lng": 127.111451959,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   },
   {
     "id": "743f365185",
@@ -3903,7 +4119,8 @@
     "buildingName": "우디안3단지",
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "85c18728c6",
@@ -3921,7 +4138,8 @@
     "buildingName": null,
     "lat": null,
     "lng": null,
-    "coordSource": null
+    "coordSource": null,
+    "areasM2": []
   },
   {
     "id": "4d44739408",
@@ -3939,6 +4157,7 @@
     "buildingName": null,
     "lat": 37.579904,
     "lng": 127.093493,
-    "coordSource": "kapt-address"
+    "coordSource": "kapt-address",
+    "areasM2": []
   }
 ]

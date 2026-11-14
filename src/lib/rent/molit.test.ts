@@ -3,7 +3,7 @@
 jest.mock("server-only", () => ({}));
 
 import { getComplex } from "@/lib/complexes";
-import { getRentAreas, getRentContracts } from "@/lib/rent/molit";
+import { getRentContracts } from "@/lib/rent/molit";
 
 const originalFetch = global.fetch;
 
@@ -36,41 +36,4 @@ it("계약 조회는 전달한 월만 요청하고 면적 조회용 추가 월�
   expect(result.contracts).toHaveLength(1);
   expect(fetchMock).toHaveBeenCalledTimes(1);
   expect(new URL(String(fetchMock.mock.calls[0][0])).searchParams.get("DEAL_YMD")).toBe("209902");
-});
-
-it("계약과 면적 조회가 겹친 월의 in-flight 요청과 월별 캐시를 공유한다", async () => {
-  let release!: () => void;
-  const waiting = new Promise<void>((resolve) => { release = resolve; });
-  const fetchMock = jest.fn(async (input: RequestInfo | URL) => {
-    await waiting;
-    const month = new URL(String(input)).searchParams.get("DEAL_YMD")!;
-    return new Response(xml(month, 45), { status: 200 });
-  });
-  global.fetch = fetchMock;
-  const complex = getComplex("5d48b3157f")!;
-
-  const contracts = getRentContracts(complex, "2099-03-01", "2099-03-31", ["209903"], "key");
-  const areas = getRentAreas(complex, ["209903"], "key");
-  release();
-  const [contractResult, areaResult] = await Promise.all([contracts, areas]);
-
-  expect(contractResult.contracts).toHaveLength(1);
-  expect(areaResult).toEqual([45]);
-  expect(fetchMock).toHaveBeenCalledTimes(1);
-
-  await getRentAreas(complex, ["209903"], "key");
-  expect(fetchMock).toHaveBeenCalledTimes(1);
-});
-
-it("면적 조회는 전달한 여러 월에서 발견한 면적을 중복 없이 정렬한다", async () => {
-  const fetchMock = jest.fn(async (input: RequestInfo | URL) => {
-    const month = new URL(String(input)).searchParams.get("DEAL_YMD")!;
-    const area = month === "209904" ? 59.9 : 29.91;
-    return new Response(xml(month, area), { status: 200 });
-  });
-  global.fetch = fetchMock;
-  const complex = getComplex("5d48b3157f")!;
-
-  await expect(getRentAreas(complex, ["209905", "209904", "209905"], "key")).resolves.toEqual([29.91, 59.9]);
-  expect(fetchMock).toHaveBeenCalledTimes(2);
 });

@@ -20,6 +20,8 @@ export type Complex = {
   lat: number | null;
   lng: number | null;
   coordSource: CoordSource | null;
+  /** 최근 데이터 생성에서 확인한 전용면적 카탈로그. */
+  areasM2: number[];
 };
 
 export type ComplexMeta = {

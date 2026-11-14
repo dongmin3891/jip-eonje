@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 
-import type { ContractType } from "@/lib/rent/types";
+import type { ContractType } from "./types.ts";
 
 export type MolitErrorCode = "KEY_INVALID" | "QUOTA_EXCEEDED" | "UPSTREAM" | "KEY_MISSING";
 
