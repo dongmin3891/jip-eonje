@@ -148,19 +148,29 @@ export function ComplexPanel({
   const mixed = isMixedHousingType(selected);
   return (
     <div className="h-full min-h-0 overflow-y-auto overscroll-contain">
-      <div className="sticky top-0 z-10 border-b border-neutral-100 bg-white/95 px-4 py-1 backdrop-blur-sm">
-        <Button type="button" variant="ghost" className="-ml-2 h-11 px-2" onClick={onClear}>
+      <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-neutral-100 bg-white/95 px-4 py-1 backdrop-blur-sm">
+        <Button type="button" variant="ghost" className="-ml-2 h-11 shrink-0 px-2" onClick={onClear}>
           ← 단지 목록
         </Button>
+        <h2 className="min-w-0 flex-1 truncate text-sm font-semibold" title={selected.name}>{selected.name}</h2>
+        <FavoriteButton name={selected.name} saved={favorites.includes(selected.id)} onToggle={() => onToggleFavorite(selected.id)} />
       </div>
-      <div className="space-y-6 px-5 py-5">
-        <section aria-label="단지 정보">
-          <h2 className="text-xl font-semibold leading-snug tracking-tight text-balance">{selected.name}</h2>
-          <div className="flex items-center gap-2">
-            <FavoriteButton name={selected.name} saved={favorites.includes(selected.id)} onToggle={() => onToggleFavorite(selected.id)} />
-            <span className="text-sm text-neutral-600">{favorites.includes(selected.id) ? "관심 단지에 저장됨" : "관심 단지로 저장"}</span>
-          </div>
+      <div key={selected.id} className="space-y-4 px-4 py-3">
           {favoriteMessage ? <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p> : null}
+
+        <RentSection
+          complex={selected}
+          from={from}
+          to={to}
+          enabled={rentEnabled}
+          mixedHousing={mixed}
+          periodControl={periodControl}
+          rangeError={rangeError}
+          addressWarning={peers.length ? `이 주소는 ${peers.map((peer) => peer.name).join(", ")}와 겹쳐 공개 계약이 함께 잡힐 수 있습니다.` : undefined}
+        />
+
+        <ShInfo complex={selected} />
+        <section aria-label="단지 기본정보">
           <p className="mt-2 text-sm leading-6 text-neutral-600">{selected.address}</p>
           <div className="mt-3"><CopyButton key={selected.id} label="단지 링크 복사" value={() => window.location.href} /></div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -190,24 +200,6 @@ export function ComplexPanel({
           ) : null}
         </section>
 
-        <ShInfo complex={selected} />
-
-        <div className="border-t border-neutral-200 pt-6">
-          {peers.length > 0 ? (
-            <p className="mb-4 rounded-lg bg-neutral-50 p-3 text-xs leading-5 text-neutral-600">
-              이 주소는 {peers.map((peer) => peer.name).join(", ")}와 겹칩니다. 공개된 계약이 함께 잡힐 수 있습니다.
-            </p>
-          ) : null}
-          <RentSection
-            complex={selected}
-            from={from}
-            to={to}
-            enabled={rentEnabled}
-            mixedHousing={mixed}
-            periodControl={periodControl}
-            rangeError={rangeError}
-          />
-        </div>
       </div>
     </div>
   );

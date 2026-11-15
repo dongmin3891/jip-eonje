@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { RentPeriodFilter, rentPeriodRange, type RentPeriod } from "@/components/rent-period-filter";
 import { complexes, complexMeta, getComplex, type Complex } from "@/lib/complexes";
 import { formatDate } from "@/lib/format";
+import { readRentPreferences, saveRentPreferences } from "@/lib/rent/preferences";
 
 type PanelSize = "collapsed" | "default" | "expanded";
 
@@ -57,6 +58,7 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [bounds, setBounds] = useState<MapBounds | null>(null);
   const [period, setPeriod] = useState<RentPeriod>({ kind: "preset", key: "m3" });
+  const [periodSaveError, setPeriodSaveError] = useState(false);
   const [panelSize, setPanelSize] = useState<PanelSize>("default");
   const [rememberedName, setRememberedName] = useState("");
   const [recentIds, setRecentIds] = useState<string[]>([]);
@@ -143,6 +145,7 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
       const id = params.get("complex") ?? (fromHistory ? null : rememberedComplexId());
       const complex = id ? getComplex(id) : null;
       setSelectedId(complex?.id ?? null);
+      if (complex) setPeriod(readRentPreferences(complex.id).period ?? { kind: "preset", key: "m3" });
       setRememberedName(complex?.name ?? "");
       recordRecent(complex?.id ?? null);
       if (complex) {
@@ -160,6 +163,10 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
     const complex = getComplex(id);
     if (!complex) return;
     setSelectedId(complex.id);
+    if (complex.id !== selectedId) {
+      setPeriod(readRentPreferences(complex.id).period ?? { kind: "preset", key: "m3" });
+      setPeriodSaveError(false);
+    }
     setRememberedName(complex.name);
     setPanelSize((current) => current === "collapsed" ? "default" : current);
     rememberComplex(complex.id);
@@ -239,10 +246,10 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
 
         <aside
           aria-label="단지 탐색"
-          className={`z-20 flex max-h-full shrink-0 flex-col overflow-hidden rounded-t-2xl border-t border-neutral-200 bg-white md:z-auto md:h-full md:w-[440px] md:rounded-none md:border-t-0 md:border-l ${PANEL_HEIGHTS[panelSize]}`}
+          className={`z-20 flex max-h-full shrink-0 flex-col overflow-hidden rounded-t-2xl border-t border-neutral-200 bg-white md:z-auto md:h-full md:w-[440px] md:rounded-none md:border-t-0 md:border-l ${selected && panelSize === "default" ? "h-[min(60dvh,78%)]" : PANEL_HEIGHTS[panelSize]}`}
         >
           <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-neutral-100 px-4 md:hidden">
-            <p className="min-w-0 truncate text-sm font-medium">{selected?.name ?? "단지 목록"}</p>
+            <p className="min-w-0 truncate text-sm font-medium">{selected ? panelSize === "collapsed" ? selected.name : "계약 현황" : "단지 목록"}</p>
             <div className="flex shrink-0 gap-1" role="group" aria-label="패널 크기">
               {([
                 ["collapsed", "접기"],
@@ -285,7 +292,13 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
               to={range.ok ? range.to : period.kind === "custom" ? period.to : ""}
               rentEnabled={hasRentKey && range.ok}
               rangeError={range.ok ? null : range.message}
-              periodControl={<RentPeriodFilter period={period} onChange={setPeriod} />}
+              periodControl={<>
+                <RentPeriodFilter period={period} onChange={(next) => {
+                  setPeriod(next);
+                  if (selectedId) setPeriodSaveError(!saveRentPreferences(selectedId, { period: next }));
+                }} />
+                <p className="mt-2 text-xs text-neutral-500">{periodSaveError ? "브라우저 저장이 제한되어 기간은 이번 화면에서만 유지됩니다." : "조회 기간과 관심 면적은 이 브라우저에 단지별로 저장됩니다."}</p>
+              </>}
               onSelect={chooseComplex}
               onClear={() => {
                 setSelectedId(null);

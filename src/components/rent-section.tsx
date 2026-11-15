@@ -1,15 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatAreaWithPyeong, formatDate, formatFetchedAt, formatFloor, formatManwon } from "@/lib/format";
 import type { Complex } from "@/lib/complexes";
 import { countByArea, mergeAreaKeys } from "@/lib/rent/areas";
 import type { ApiErrorBody, ContractType, RentAreasResponse, RentResponse } from "@/lib/rent/types";
+import { readRentPreferences, saveRentPreferences } from "@/lib/rent/preferences";
 
 type RentSectionProps = {
   complex: Complex;
@@ -19,6 +21,7 @@ type RentSectionProps = {
   mixedHousing: boolean;
   periodControl: ReactNode;
   rangeError: string | null;
+  addressWarning?: string;
 };
 
 type TypeFilter = "all" | ContractType;
@@ -64,9 +67,34 @@ export function RentSection(props: RentSectionProps) {
   return <RentSectionBody key={props.complex.id} {...props} />;
 }
 
-function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodControl, rangeError }: RentSectionProps) {
-  const [area, setArea] = useState("all");
+function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodControl, rangeError, addressWarning }: RentSectionProps) {
+  const [selectedAreas, setSelectedAreas] = useState(() => readRentPreferences(complex.id).areas ?? []);
+  const [sheet, setSheet] = useState<"period" | "area" | "contracts">("area");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [draftAreas, setDraftAreas] = useState<string[]>([]);
   const [contractType, setContractType] = useState<TypeFilter>("all");
+  const [draftType, setDraftType] = useState<TypeFilter>("all");
+  const [saveError, setSaveError] = useState(false);
+  const returnFocus = useRef<HTMLElement | null>(null);
+
+  function openSheet(target: typeof sheet, trigger: HTMLElement) {
+    returnFocus.current = trigger;
+    setDraftAreas([...selectedAreas]);
+    setDraftType(contractType);
+    setSheet(target);
+    setSheetOpen(true);
+  }
+  function toggleDraftArea(value: string) {
+    setDraftAreas((current) => current.includes(value)
+      ? current.filter((item) => item !== value)
+      : [...current, value].sort((a, b) => Number(a) - Number(b)));
+  }
+  function applyAreas() {
+    setSelectedAreas(draftAreas);
+    setContractType(draftType);
+    setSaveError(!saveRentPreferences(complex.id, { areas: draftAreas }));
+    setSheetOpen(false);
+  }
 
   const contractQuery = useQuery({
     queryKey: ["rent", complex.id, from, to],
@@ -82,71 +110,40 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
   });
 
   const contracts = contractQuery.data?.contracts ?? [];
-  const areas = mergeAreaKeys(areasQuery.data?.areasM2 ?? [], contracts);
-  const areaCounts = countByArea(contracts);
-  const activeArea = areas.includes(area) ? area : "all";
+  const areas = mergeAreaKeys([...(areasQuery.data?.areasM2 ?? []), ...selectedAreas.map(Number)], contracts);
+  const typeContracts = contracts.filter((item) => draftType === "all" || item.contractType === draftType);
+  const areaCounts = countByArea(typeContracts);
+  const countsReady = enabled && !rangeError && contractQuery.isSuccess;
   const areaSelectDisabled =
     !enabled || !!rangeError || areasQuery.isPending || (!areasQuery.isSuccess && !contractQuery.isSuccess);
   const filtered = contracts.filter((contract) => {
-    const areaMatches = activeArea === "all" || contract.areaM2.toFixed(2) === activeArea;
+    const areaMatches = selectedAreas.length === 0 || selectedAreas.includes(contract.areaM2.toFixed(2));
     const typeMatches = contractType === "all" || contract.contractType === contractType;
     return areaMatches && typeMatches;
   });
-  const hasFilters = activeArea !== "all" || contractType !== "all";
+  const hasFilters = selectedAreas.length > 0 || contractType !== "all";
 
   return (
-    <section aria-label="공개된 전월세 계약" className="space-y-4">
-      <div>
-        <h3 className="text-base font-semibold">공개된 전월세 계약</h3>
-        <p className="mt-1 text-xs leading-5 text-neutral-500">계약 건수는 당첨이나 입주 인원이 아닙니다.</p>
+    <section aria-label="공개된 전월세 계약" className="space-y-2">
+      <div className="sticky top-[53px] z-[5] rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2">
+        <button type="button" onClick={(event) => openSheet("period", event.currentTarget)} aria-haspopup="dialog" className="flex min-h-11 w-full items-center justify-between gap-2 text-left text-xs text-emerald-900">
+          <span>{formatDate(from)} – {formatDate(to)}</span><span className="shrink-0 underline">기간 변경</span>
+        </button>
+        <button type="button" onClick={(event) => openSheet("area", event.currentTarget)} aria-haspopup="dialog" className="flex min-h-11 w-full items-center justify-between gap-2 border-t border-emerald-100 text-left text-sm font-medium text-emerald-950">
+          <span>{selectedAreas.length === 0 ? "모든 면적" : selectedAreas.length === 1 ? formatAreaWithPyeong(Number(selectedAreas[0])) : `${selectedAreas[0]}㎡ 외 ${selectedAreas.length - 1}개`}</span>
+          <span className="shrink-0 text-xs font-normal underline">면적 변경</span>
+        </button>
+        <div className="flex items-center justify-between gap-2 border-t border-emerald-100 py-3">
+          <h3 className="text-sm text-emerald-900">공개 계약{contractType === "all" ? "" : ` · ${contractType}`}</h3>
+          <p role="status" className="text-3xl font-bold tabular-nums text-emerald-950">{countsReady ? `${filtered.length}건` : contractQuery.isError ? "조회 실패" : enabled && !rangeError ? "조회 중…" : "—"}</p>
+        </div>
       </div>
+      {saveError ? <p className="text-xs text-neutral-500">브라우저 저장이 제한되어 관심 면적은 이번 화면에서만 유지됩니다.</p> : null}
 
-      <div className="space-y-4 rounded-xl border border-neutral-200 p-3">
-        {periodControl}
-        <fieldset disabled={!enabled || !!rangeError} className="min-w-0 space-y-3 border-t border-neutral-100 pt-3 disabled:opacity-50">
-          <legend className="sr-only">면적 및 계약 유형</legend>
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-neutral-600" htmlFor={`area-${complex.id}`}>전용면적</label>
-            <select
-              id={`area-${complex.id}`}
-              className="h-11 w-full min-w-0 rounded-lg border border-neutral-200 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-neutral-500"
-              value={activeArea}
-              disabled={areaSelectDisabled}
-              onChange={(event) => setArea(event.target.value)}
-            >
-              <option value="all">{areasQuery.isPending && enabled && !rangeError ? "면적 정보 불러오는 중…" : "모든 면적"}</option>
-              {areas.map((value) => (
-                <option key={value} value={value}>
-                  {formatAreaWithPyeong(Number(value))} · {areaCounts.get(value) ?? 0}건
-                </option>
-              ))}
-            </select>
-            {areasQuery.isError ? (
-              <div className="flex items-center justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2">
-                <p className="text-xs leading-5 text-neutral-500">36개월 면적 정보를 불러오지 못했습니다. 현재 기간의 면적만 표시합니다.</p>
-                <Button type="button" variant="ghost" className="h-9 shrink-0 px-2 text-xs" disabled={areasQuery.isFetching} onClick={() => void areasQuery.refetch()}>
-                  {areasQuery.isFetching ? "불러오는 중…" : "면적 다시 시도"}
-                </Button>
-              </div>
-            ) : null}
-          </div>
-          <div role="group" aria-label="계약 유형" className="grid grid-cols-3 gap-1">
-            {(["all", "신규", "갱신"] as const).map((type) => (
-              <Button
-                key={type}
-                type="button"
-                className="h-10"
-                variant={contractType === type ? "default" : "outline"}
-                aria-pressed={contractType === type}
-                disabled={!enabled || !!rangeError || !contractQuery.isSuccess}
-                onClick={() => setContractType(type)}
-              >
-                {type === "all" ? "전체" : type}
-              </Button>
-            ))}
-          </div>
-        </fieldset>
-      </div>
+      <Button type="button" className="h-11 w-full" disabled={!countsReady} aria-haspopup="dialog" onClick={(event) => openSheet("contracts", event.currentTarget)}>계약 내역 보기</Button>
+      <p className="text-xs leading-5 text-neutral-500">단지 전체 공개 계약입니다. 행복주택 당첨자의 계약 인원과 다를 수 있습니다.</p>
+
+      {addressWarning ? <p className="text-xs leading-5 text-neutral-500">{addressWarning}</p> : null}
 
       {mixedHousing ? (
         <p className="text-xs leading-5 text-neutral-500">
@@ -156,10 +153,10 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
 
       {rangeError ? null : !enabled ? (
         <p className="rounded-xl bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
-          전월세 계약 조회를 준비 중입니다. 공가·예비자 현황은 위의 SH 주택정보에서 확인해 주세요.
+          전월세 계약 조회를 준비 중입니다. 공가·예비자 현황은 아래 SH 주택정보에서 확인해 주세요.
         </p>
       ) : contractQuery.isPending ? (
-        <div role="status" className="space-y-3">
+        <div className="space-y-3">
           <span className="sr-only">전월세 계약을 불러오는 중입니다.</span>
           <Skeleton className="h-7 w-24" />
           <Skeleton className="h-24 w-full" />
@@ -176,26 +173,75 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between gap-2">
-            <p role="status" className="text-sm text-neutral-600">
-              조회 결과 <strong className="ml-1 text-xl font-semibold text-neutral-950 tabular-nums">{filtered.length}건</strong>
+          <p className="text-xs leading-5 text-neutral-500">신고·공개 시점에 따라 최근 계약이 아직 반영되지 않았을 수 있습니다.</p>
+          <details className="text-xs leading-5 text-neutral-500">
+            <summary className="cursor-pointer rounded-md py-2 focus-visible:outline-2 focus-visible:outline-neutral-500">데이터 출처·조회 시각</summary>
+            <p className="mt-1">
+              조회 {formatFetchedAt(contractQuery.data.fetchedAt)} · {contractQuery.data.source.name}
+              {contractQuery.data.matchedAptNames.length > 0 ? ` · 매칭 단지명 ${contractQuery.data.matchedAptNames.join(", ")}` : ""}
             </p>
-            {hasFilters ? (
-              <Button type="button" variant="ghost" className="h-11 text-xs" onClick={() => { setArea("all"); setContractType("all"); }}>
-                면적·유형 초기화
-              </Button>
-            ) : null}
+          </details>
+        </>
+      )}
+      <BottomSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title={sheet === "period" ? "조회 기간" : sheet === "area" ? "관심 면적 선택" : "계약 내역"}
+        description={sheet === "contracts" ? `${complex.name} · ${formatDate(from)} – ${formatDate(to)} · ${filtered.length}건` : complex.name}
+        returnFocus={returnFocus}
+        footer={sheet === "area" ? (
+          <div className="grid grid-cols-2 gap-2">
+            <Button type="button" variant="outline" className="h-11" onClick={() => setSheetOpen(false)}>취소</Button>
+            <Button type="button" className="h-11" onClick={applyAreas}>적용</Button>
           </div>
+        ) : undefined}
+      >
+        {sheet === "period" ? periodControl : sheet === "area" ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm text-neutral-600">여러 면적 선택 가능</p>
+              <button type="button" className="min-h-11 text-xs underline" onClick={() => setDraftAreas([])}>모든 면적으로</button>
+            </div>
+            <p className="text-xs leading-5 text-neutral-500">여러 면적을 선택하면 계약 건수를 합산합니다. 공식 공급형 구분은 아닙니다.</p>
+            {areasQuery.isPending && enabled && !rangeError ? <p className="text-xs text-neutral-500">면적 정보 불러오는 중…</p> : null}
+            <div role="group" aria-label="관심 전용면적 선택" className="rounded-lg border border-neutral-200">
+              {areas.map((value) => (
+                <label key={value} className="flex min-h-11 items-center gap-2 px-3 py-2 text-sm">
+                  <input type="checkbox" checked={draftAreas.includes(value)} disabled={areaSelectDisabled} onChange={() => toggleDraftArea(value)} className="size-4 accent-emerald-700" />
+                  {formatAreaWithPyeong(Number(value))} · {countsReady ? `${areaCounts.get(value) ?? 0}건` : "—"}
+                </label>
+              ))}
+            </div>
+            {!areasQuery.isPending && areas.length === 0 ? <p className="text-xs text-neutral-500">확인된 면적이 없습니다. 모든 면적으로 조회할 수 있습니다.</p> : null}
+            {areasQuery.isError ? (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2">
+                <p className="text-xs leading-5 text-neutral-500">면적 정보를 불러오지 못했습니다. 현재 기간의 면적과 저장한 관심 면적만 표시합니다.</p>
+                <Button type="button" variant="ghost" className="h-9 shrink-0 px-2 text-xs" disabled={areasQuery.isFetching} onClick={() => void areasQuery.refetch()}>면적 다시 시도</Button>
+              </div>
+            ) : null}
+            <details>
+              <summary className="cursor-pointer py-2 text-xs text-neutral-500">계약 유형 · {draftType === "all" ? "전체" : draftType}</summary>
+              <div role="group" aria-label="계약 유형" className="grid grid-cols-3 gap-1">
+                {(["all", "신규", "갱신"] as const).map((type) => (
+                  <Button key={type} type="button" className="h-10" variant={draftType === type ? "default" : "outline"} aria-pressed={draftType === type} onClick={() => setDraftType(type)}>{type === "all" ? "전체" : type}</Button>
+                ))}
+              </div>
+            </details>
+            <p className="text-xs text-neutral-500">{draftAreas.length ? `${draftAreas.length}개 면적 선택` : "선택 없음 · 모든 면적으로 조회"}</p>
+          </div>
+
+        ) : (
+          <div>
           {filtered.length === 0 ? (
             <div className="rounded-xl bg-neutral-50 px-4 py-6 text-center">
               <p className="text-sm font-medium">조건에 맞는 공개 계약이 없습니다.</p>
               <p className="mt-2 text-sm leading-6 text-neutral-500">
-                {hasFilters ? "면적·유형을 초기화하거나 조회 기간을 늘려보세요." : "조회 기간을 늘려 다시 확인해 보세요."}
+                {hasFilters ? "관심 면적을 변경하거나 조회 기간을 늘려보세요." : "조회 기간을 늘려 다시 확인해 보세요."}
               </p>
               <p className="mt-2 text-xs leading-5 text-neutral-500">0건이 당첨이나 입주가 없다는 뜻은 아닙니다.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-neutral-100 border-y border-neutral-100">
+            <ul aria-label="개별 계약 내역" className="divide-y divide-neutral-100 border-y border-neutral-100">
               {filtered.map((contract) => {
                 const floor = formatFloor(contract.floor);
                 return (
@@ -217,16 +263,10 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
               })}
             </ul>
           )}
-          <p className="text-xs leading-5 text-neutral-500">오늘 계약은 다음날에 집계됩니다.</p>
-          <details className="text-xs leading-5 text-neutral-500">
-            <summary className="cursor-pointer rounded-md py-2 focus-visible:outline-2 focus-visible:outline-neutral-500">데이터 출처·조회 시각</summary>
-            <p className="mt-1">
-              조회 {formatFetchedAt(contractQuery.data.fetchedAt)} · {contractQuery.data.source.name}
-              {contractQuery.data.matchedAptNames.length > 0 ? ` · 매칭 단지명 ${contractQuery.data.matchedAptNames.join(", ")}` : ""}
-            </p>
-          </details>
-        </>
-      )}
+          </div>
+
+        )}
+      </BottomSheet>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ByRoleMatcher, ByRoleOptions } from "@testing-library/dom";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
 import { HomeShell } from "@/components/home-shell";
@@ -62,8 +63,84 @@ it("용산 목록에서 연 상세를 녹번 검색으로 바꾸면 은평구 �
 });
 
 function rentSection() {
-  return within(screen.getByRole("region", { name: "공개된 전월세 계약" }));
+  const region = document.querySelector<HTMLElement>('section[aria-label="공개된 전월세 계약"]')!;
+  const queries = within(screen.queryByRole("dialog") ?? region);
+  function getByRole<T extends HTMLElement = HTMLElement>(role: ByRoleMatcher, options?: ByRoleOptions): T {
+    return role === "status"
+      ? within(region).getByRole<T>(role, { ...options, hidden: true })
+      : queries.getByRole<T>(role, options);
+  }
+  return { ...queries, getByRole };
 }
+
+it("첫 화면은 기간·면적·건수와 내역 보기만 노출한다", async () => {
+  mount(); selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  expect(rentSection().getAllByRole("button")).toHaveLength(3);
+  expect(rentSection().queryByRole("checkbox")).not.toBeInTheDocument();
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  fireEvent.click(await rentSection().findByRole("checkbox", { name: /45\.00㎡/ }));
+  expect(rentSection().getByRole("status")).toHaveTextContent("2건");
+  expect(localStorage.getItem("jip-eonje:rent-preferences:5d48b3157f")).toBeNull();
+  fireEvent.click(rentSection().getByRole("button", { name: "적용" }));
+  expect(rentSection().getByRole("status")).toHaveTextContent("0건");
+  expect(rentSection().queryByRole("checkbox")).not.toBeInTheDocument();
+  fireEvent.click(rentSection().getByRole("button", { name: "계약 내역 보기" }));
+  expect(screen.getByRole("dialog", { name: "계약 내역" })).toBeInTheDocument();
+  expect(rentSection().getByText("조건에 맞는 공개 계약이 없습니다.")).toBeInTheDocument();
+});
+
+it("단지별 기간과 적용한 관심 면적을 복원하며 취소한 변경은 저장하지 않는다", async () => {
+  localStorage.setItem("jip-eonje:rent-preferences:5d48b3157f", JSON.stringify({
+    period: { kind: "custom", from: "2026-11-01", to: "2026-11-10" }, area: "29.00",
+  }));
+  mount(); selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("1건"));
+  fireEvent.click(rentSection().getByRole("button", { name: /기간 변경/ }));
+  expect(rentSection().getByLabelText("시작일")).toHaveValue("2026-11-01");
+  fireEvent.change(rentSection().getByLabelText("종료일"), { target: { value: "2026-11-12" } });
+  fireEvent.click(rentSection().getByRole("button", { name: "닫기" }));
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  expect(rentSection().queryByLabelText("시작일")).not.toBeInTheDocument();
+  fireEvent.click(rentSection().getByRole("checkbox", { name: /59\.00㎡/ }));
+  fireEvent.click(rentSection().getByRole("button", { name: "취소" }));
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  expect(rentSection().getByRole("checkbox", { name: /59\.00㎡/ })).not.toBeChecked();
+  fireEvent.click(rentSection().getByRole("checkbox", { name: /59\.00㎡/ }));
+  fireEvent.click(rentSection().getByRole("button", { name: "적용" }));
+  expect(JSON.parse(localStorage.getItem("jip-eonje:rent-preferences:5d48b3157f")!)).toEqual({
+    period: { kind: "custom", from: "2026-11-01", to: "2026-11-12" }, areas: ["29.00", "59.00"],
+  });
+  fireEvent.click(screen.getByRole("button", { name: "← 단지 목록" }));
+  selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  expect(rentSection().getByRole("button", { name: /면적 변경/ })).toHaveTextContent("29.00㎡ 외 1개");
+  expect(rentSection().getByRole("button", { name: /기간 변경/ })).toHaveTextContent("2026.11.12");
+});
+
+it("면적과 계약 유형은 적용해야 반영되고 모든 면적으로 복귀할 수 있다", async () => {
+  mount(); selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  fireEvent.click(rentSection().getByRole("checkbox", { name: /29\.00㎡/ }));
+  fireEvent.click(rentSection().getByRole("checkbox", { name: /59\.00㎡/ }));
+  fireEvent.click(rentSection().getByText("계약 유형 · 전체"));
+  fireEvent.click(rentSection().getByRole("button", { name: "신규" }));
+  expect(rentSection().getByRole("status")).toHaveTextContent("2건");
+  fireEvent.click(rentSection().getByRole("button", { name: "적용" }));
+  expect(rentSection().getByRole("status")).toHaveTextContent("1건");
+  expect(rentSection().getByRole("heading", { name: "공개 계약 · 신규" })).toBeInTheDocument();
+  fireEvent.click(rentSection().getByRole("button", { name: "계약 내역 보기" }));
+  expect(rentSection().getByRole("list", { name: "개별 계약 내역" })).toHaveTextContent("5,000만원");
+  fireEvent.click(rentSection().getByRole("button", { name: "닫기" }));
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  fireEvent.click(rentSection().getByRole("button", { name: "모든 면적으로" }));
+  fireEvent.click(rentSection().getByText("계약 유형 · 신규"));
+  fireEvent.click(rentSection().getByRole("button", { name: "전체" }));
+  fireEvent.click(rentSection().getByRole("button", { name: "적용" }));
+  expect(rentSection().getByRole("status")).toHaveTextContent("2건");
+  expect(JSON.parse(localStorage.getItem("jip-eonje:rent-preferences:5d48b3157f")!).areas).toEqual([]);
+});
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
@@ -73,6 +150,27 @@ beforeEach(() => {
     isAreasRequest(input) ? apiResponse(areasResponse) : apiResponse(response),
   );
   global.fetch = fetchMock;
+});
+
+it("팝업을 닫으면 기본 패널과 스크롤을 유지하고 초점을 돌리며 미적용 선택을 버린다", async () => {
+  mount(); selectComplex();
+  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  const trigger = rentSection().getByRole("button", { name: /면적 변경/ });
+  const panel = document.getElementById("complex-panel-content")!.firstElementChild!;
+  panel.scrollTop = 20;
+  fireEvent.click(trigger);
+  const dialog = screen.getByRole("dialog", { name: "관심 면적 선택" });
+  expect(dialog.closest("section")).toBeNull();
+  expect(screen.queryByRole("button", { name: "기본" })).not.toBeInTheDocument();
+  fireEvent.click(within(dialog).getByRole("checkbox", { name: /29.00㎡/ }));
+  fireEvent.keyDown(dialog, { key: "Escape", code: "Escape" });
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  await waitFor(() => expect(trigger).toHaveFocus());
+  expect(screen.getByRole("button", { name: "기본" })).toHaveAttribute("aria-pressed", "true");
+  expect(panel.scrollTop).toBe(20);
+  fireEvent.click(trigger);
+  expect(rentSection().getByRole("checkbox", { name: /29.00㎡/ })).not.toBeChecked();
+  fireEvent.click(rentSection().getByRole("button", { name: "팝업 닫기" }));
 });
 
 it("공유 URL이 최근 단지보다 우선하고 뒤로가기·앞으로가기로 선택을 복원한다", async () => {
@@ -110,43 +208,31 @@ it("단지 선택 뒤 상세에서 조회하고, 목록으로 돌아가면 검�
   selectComplex();
   expect(await rentSection().findByRole("status")).toBeInTheDocument();
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
+  fireEvent.click(rentSection().getByRole("button", { name: /기간 변경/ }));
   expect(rentSection().getByRole("button", { name: "3개월" })).toHaveAttribute("aria-pressed", "true");
+  fireEvent.click(rentSection().getByRole("button", { name: "닫기" }));
   const shLink = screen.getByRole("link", { name: "이 단지 SH 상세정보 보기 ↗" });
   const rent = screen.getByRole("region", { name: "공개된 전월세 계약" });
-  expect(shLink.compareDocumentPosition(rent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(rent.compareDocumentPosition(shLink) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "← 단지 목록" }));
   expect(screen.getByRole("combobox", { name: "단지명 또는 지역 검색" })).toHaveValue("");
   expect(screen.queryByRole("region", { name: "공개된 전월세 계약" })).not.toBeInTheDocument();
 });
 
-it("면적·유형 조합을 초기화하고 잘못된 기간은 조회하지 않는다", async () => {
-  mount();
-  selectComplex();
+it("기간만 수정할 수 있고 잘못된 기간은 조회하지 않는다", async () => {
+  mount(); selectComplex();
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
-  await waitFor(() => expect(rentSection().getByRole("option", { name: /45\.00㎡.*0건/ })).toBeInTheDocument());
-  fireEvent.change(rentSection().getByRole("combobox", { name: "전용면적" }), { target: { value: "45.00" } });
-  expect(rentSection().getByRole("status")).toHaveTextContent("0건");
-  fireEvent.change(rentSection().getByRole("combobox", { name: "전용면적" }), { target: { value: "29.00" } });
-  fireEvent.click(rentSection().getByRole("button", { name: "갱신" }));
-  expect(rentSection().getByRole("status")).toHaveTextContent("0건");
-  fireEvent.click(rentSection().getByRole("button", { name: "면적·유형 초기화" }));
-  expect(rentSection().getByRole("status")).toHaveTextContent("2건");
+  fireEvent.click(rentSection().getByRole("button", { name: /기간 변경/ }));
+  expect(rentSection().queryByRole("checkbox")).not.toBeInTheDocument();
   fireEvent.click(rentSection().getByRole("button", { name: "1년" }));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
-  const contractRequests = fetchMock.mock.calls.filter(([input]) => !isAreasRequest(input));
-  const request = new URL(contractRequests.at(-1)![0], "http://localhost");
-  expect(fetchMock.mock.calls.filter(([input]) => isAreasRequest(input))).toHaveLength(1);
   fireEvent.click(rentSection().getByRole("button", { name: "직접 선택" }));
-  expect(rentSection().getByLabelText("시작일")).toHaveValue(request.searchParams.get("from"));
-  expect(rentSection().getByLabelText("종료일")).toHaveValue(request.searchParams.get("to"));
   fireEvent.change(rentSection().getByLabelText("시작일"), { target: { value: "2099-01-01" } });
   expect(rentSection().getByRole("alert")).toHaveTextContent("시작일이 종료일보다 늦습니다.");
-  expect(rentSection().getByRole("combobox", { name: "전용면적" })).toBeDisabled();
   expect(fetchMock).toHaveBeenCalledTimes(3);
   fireEvent.click(rentSection().getByRole("button", { name: "일주일" }));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
-  await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
   expect(fetchMock.mock.calls.filter(([input]) => isAreasRequest(input))).toHaveLength(1);
 });
 
@@ -162,8 +248,9 @@ it("오류 상태에서도 기간을 바꾸거나 재시도할 수 있다", asyn
   mount();
   selectComplex();
   expect(await rentSection().findByRole("alert")).toHaveTextContent("잠시 후 다시 시도해 주세요.");
-  await waitFor(() => expect(rentSection().getByRole("option", { name: /45\.00㎡.*0건/ })).toBeInTheDocument());
+  fireEvent.click(rentSection().getByRole("button", { name: /기간 변경/ }));
   expect(rentSection().getByRole("button", { name: "6개월" })).toBeEnabled();
+  fireEvent.click(rentSection().getByRole("button", { name: "닫기" }));
   fireEvent.click(rentSection().getByRole("button", { name: "다시 시도" }));
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
   expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -178,10 +265,11 @@ it("면적 조회가 느려도 계약을 먼저 보여주고 면적 선택만 �
   mount();
   selectComplex();
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
-  const areaSelect = rentSection().getByRole("combobox", { name: "전용면적" });
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  const areaSelect = rentSection().getByRole("checkbox", { name: /29\.00㎡/ });
   expect(areaSelect).toBeDisabled();
-  expect(areaSelect).toHaveDisplayValue("면적 정보 불러오는 중…");
-  expect(rentSection().getByRole("button", { name: "신규" })).toBeEnabled();
+  expect(rentSection().getByText("면적 정보 불러오는 중…")).toBeInTheDocument();
+  expect(screen.getByRole("dialog", { name: "관심 면적 선택" })).toBeInTheDocument();
   await act(async () => { resolveAreas(apiResponse(areasResponse)); });
   await waitFor(() => expect(areaSelect).toBeEnabled());
 });
@@ -196,22 +284,24 @@ it("면적 조회가 실패해도 계약과 현재 기간의 면적 필터를 �
   selectComplex();
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
   expect(rentSection().queryByRole("alert")).not.toBeInTheDocument();
-  expect(rentSection().getByText(/현재 기간의 면적만 표시합니다/)).toBeInTheDocument();
-  expect(rentSection().getByRole("option", { name: /29\.00㎡.*1건/ })).toBeInTheDocument();
-  expect(rentSection().getByRole("combobox", { name: "전용면적" })).toBeEnabled();
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  expect(rentSection().getByText(/현재 기간의 면적과 저장한 관심 면적/)).toBeInTheDocument();
+  expect(rentSection().getByRole("checkbox", { name: /29\.00㎡.*1건/ })).toBeEnabled();
 });
 
 it("패널 크기를 바꿔도 조회 조건을 유지하고, 접은 상태에서 검색하면 다시 연다", async () => {
   mount();
   selectComplex();
   await waitFor(() => expect(rentSection().getByRole("status")).toHaveTextContent("2건"));
-  fireEvent.click(rentSection().getByRole("button", { name: "신규" }));
+  fireEvent.click(rentSection().getByRole("button", { name: /면적 변경/ }));
+  fireEvent.click(rentSection().getByRole("checkbox", { name: /29\.00㎡/ }));
+  fireEvent.click(rentSection().getByRole("button", { name: "적용" }));
   fireEvent.click(screen.getByRole("button", { name: "펼치기" }));
   expect(screen.getByRole("button", { name: "펼치기" })).toHaveAttribute("aria-pressed", "true");
   fireEvent.click(screen.getByRole("button", { name: "접기" }));
   expect(screen.getByRole("button", { name: "접기" })).toHaveAttribute("aria-pressed", "true");
   fireEvent.click(screen.getByRole("button", { name: "기본" }));
-  expect(rentSection().getByRole("button", { name: "신규" })).toHaveAttribute("aria-pressed", "true");
+  expect(rentSection().getByRole("button", { name: /면적 변경/ })).toHaveTextContent("29.00㎡");
   expect(rentSection().getByRole("status")).toHaveTextContent("1건");
   fireEvent.click(screen.getByRole("button", { name: "접기" }));
   fireEvent.change(screen.getByRole("combobox", { name: "단지명 또는 지역 검색" }), { target: { value: "강남센트럴" } });
