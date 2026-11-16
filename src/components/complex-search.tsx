@@ -3,27 +3,27 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
-import { searchComplexes, type Complex } from "@/lib/complexes";
+import { type Complex } from "@/lib/complexes";
 import { ShLinkBadge } from "@/components/sh-link-badge";
 
 type ComplexSearchProps = {
-  initialQuery?: string;
+  query: string;
+  onQueryChange: (query: string) => void;
+  onNavigateResults: () => void;
   recentComplexes?: Complex[];
   recentMessage?: string;
   onClearRecents?: () => void;
   onSelect: (complex: Complex) => void;
 };
 
-export function ComplexSearch({ initialQuery = "", recentComplexes = [], recentMessage = "", onClearRecents, onSelect }: ComplexSearchProps) {
-  const [query, setQuery] = useState(initialQuery);
+export function ComplexSearch({ query, onQueryChange, onNavigateResults, recentComplexes = [], recentMessage = "", onClearRecents, onSelect }: ComplexSearchProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
-  const showingRecent = !query.trim();
-  const results = showingRecent ? recentComplexes : searchComplexes(query);
-  const showResults = open && (!!query.trim() || recentComplexes.length > 0 || !!recentMessage);
+  const results = recentComplexes;
+  const showResults = open && !query.trim() && (recentComplexes.length > 0 || !!recentMessage);
 
   useEffect(() => {
     if (showResults && activeIndex >= 0) {
@@ -40,16 +40,15 @@ export function ComplexSearch({ initialQuery = "", recentComplexes = [], recentM
   }, []);
 
   function choose(complex: Complex) {
-    setQuery(complex.name);
     setOpen(false);
     onSelect(complex);
   }
 
   function clearQuery() {
-    setQuery("");
+    onQueryChange("");
     setActiveIndex(-1);
-    setOpen(true);
     inputRef.current?.focus();
+    setOpen(false);
   }
 
   return (
@@ -58,23 +57,30 @@ export function ComplexSearch({ initialQuery = "", recentComplexes = [], recentM
     }}>
       <Input
         ref={inputRef}
-        role="combobox"
-        aria-expanded={showResults}
+        role="searchbox"
+        autoComplete="off"
         aria-controls={showResults ? listId : undefined}
         aria-activedescendant={showResults && activeIndex >= 0 && results[activeIndex] ? `${listId}-${activeIndex}` : undefined}
         aria-autocomplete="list"
         aria-label="단지명 또는 지역 검색"
-        placeholder="단지 검색 · 최근 본 단지"
+        placeholder="단지명 또는 지역 검색 · 예: 녹번"
         className={query ? "h-10 pr-10 text-base" : "h-10 text-base"}
         value={query}
         onChange={(event) => {
-          setQuery(event.target.value);
+          onQueryChange(event.target.value);
           setActiveIndex(-1);
           setOpen(true);
         }}
         onFocus={() => { setOpen(true); setActiveIndex(-1); }}
         onKeyDown={(event) => {
           if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+          if (query.trim()) {
+            if (event.key === "ArrowDown" || event.key === "Enter") {
+              event.preventDefault();
+              onNavigateResults();
+            }
+            return;
+          }
           if (event.key === "Escape") setOpen(false);
           if ((event.key === "ArrowDown" || event.key === "ArrowUp") && results.length) {
             event.preventDefault();
@@ -113,16 +119,14 @@ export function ComplexSearch({ initialQuery = "", recentComplexes = [], recentM
         <div
           className="absolute top-full z-30 mt-1 max-h-[min(20rem,50dvh)] w-full overflow-auto overscroll-contain rounded-xl border border-black/10 bg-white shadow-[0_8px_24px_oklch(0_0_0/0.08)]"
         >
-          {showingRecent ? (
             <div className="flex items-center justify-between border-b border-neutral-100 px-3">
               <p className="text-sm font-medium">최근 본 단지</p>
               {results.length > 0 && onClearRecents ? <button type="button" className="min-h-11 px-2 text-xs text-neutral-500 hover:text-neutral-900" onMouseDown={(event) => event.preventDefault()} onClick={() => { setActiveIndex(-1); onClearRecents(); }}>기록 지우기</button> : null}
             </div>
-          ) : null}
-          <div id={listId} role="listbox" aria-label={showingRecent ? "최근 본 단지" : "단지 검색 결과"}>
+          <div id={listId} role="listbox" aria-label="최근 본 단지">
           {results.length === 0 ? (
             <p className="px-3 py-3 text-sm text-neutral-500" role="status">
-              {showingRecent ? "최근 본 단지가 없습니다." : "해당하는 단지가 없습니다."}
+              최근 본 단지가 없습니다.
             </p>
           ) : (
             results.map((complex, index) => (
@@ -146,7 +150,7 @@ export function ComplexSearch({ initialQuery = "", recentComplexes = [], recentM
             ))
           )}
           </div>
-          {showingRecent ? <p className="border-t border-neutral-100 px-3 py-2 text-xs leading-5 text-neutral-500" role="status">{recentMessage || "이 브라우저에 최근 본 단지 10곳까지 저장합니다."}</p> : null}
+          <p className="border-t border-neutral-100 px-3 py-2 text-xs leading-5 text-neutral-500" role="status">{recentMessage || "이 브라우저에 최근 본 단지 10곳까지 저장합니다."}</p>
         </div>
       ) : null}
     </div>

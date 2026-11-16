@@ -7,12 +7,13 @@ import { ComplexPanel, type ListScope } from "@/components/complex-panel";
 import { FAVORITES_KEY, readFavorites } from "@/lib/favorites";
 import { RECENT_COMPLEXES_KEY, normalizeRecentComplexes, readRecentComplexes } from "@/lib/recent-complexes";
 import { ComplexSearch } from "@/components/complex-search";
-import { HousingMap, type MapBounds } from "@/components/housing-map";
+import { HousingMap } from "@/components/housing-map";
 import { Button } from "@/components/ui/button";
-import { RentPeriodFilter, rentPeriodRange, type RentPeriod } from "@/components/rent-period-filter";
-import { complexes, complexMeta, getComplex, type Complex } from "@/lib/complexes";
+import { rentPeriodRange } from "@/components/rent-period-filter";
+import { complexes, complexMeta, getComplex, searchComplexes, type Complex } from "@/lib/complexes";
 import { formatDate } from "@/lib/format";
-import { readRentPreferences, saveRentPreferences } from "@/lib/rent/preferences";
+import { readRentFilters, saveRentPreferences } from "@/lib/rent/preferences";
+import { clearRentShareParams, readRentShare, rentShareUrl, type RentFilters } from "@/lib/rent/share";
 
 type PanelSize = "collapsed" | "default" | "expanded";
 
@@ -48,6 +49,7 @@ function rememberComplex(id: string) {
 
 function updateComplexUrl(id: string | null, replace = false) {
   const url = new URL(window.location.href);
+  if (url.searchParams.get("complex") !== id || id === null) clearRentShareParams(url.searchParams);
   if (id) url.searchParams.set("complex", id);
   else url.searchParams.delete("complex");
   if (url.href === window.location.href) return;
@@ -56,11 +58,14 @@ function updateComplexUrl(id: string | null, replace = false) {
 
 export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [bounds, setBounds] = useState<MapBounds | null>(null);
-  const [period, setPeriod] = useState<RentPeriod>({ kind: "preset", key: "m3" });
-  const [periodSaveError, setPeriodSaveError] = useState(false);
+  const [lastViewedId, setLastViewedId] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<"list" | "map">("list");
+  const [filters, setFilters] = useState<RentFilters>({ period: { kind: "preset", key: "m3" }, areas: [], contractType: "all" });
+  const { period } = filters;
   const [panelSize, setPanelSize] = useState<PanelSize>("default");
-  const [rememberedName, setRememberedName] = useState("");
+  const [query, setQuery] = useState("");
+  const searchQuery = query.trim();
+  const searchResults = useMemo(() => searchQuery ? searchComplexes(searchQuery, complexes.length) : null, [searchQuery]);
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const recentIdsRef = useRef<string[]>([]);
   const recentStorageUnavailable = useRef(false);
@@ -105,13 +110,12 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
   const [mapReset, setMapReset] = useState(0);
   const [searchRevision, setSearchRevision] = useState(0);
   const mapFavorites = listScope === "favorites" ? favorites : null;
-  const mapComplexes = useMemo(() => !district && !mapFavorites ? complexes : complexes.filter((complex) =>
+  const mapComplexes = useMemo(() => searchResults ?? (!district && !mapFavorites ? complexes : complexes.filter((complex) =>
     (!district || complex.district === district) &&
     (!mapFavorites || mapFavorites.includes(complex.id)),
-  ), [district, mapFavorites]);
+  )), [district, mapFavorites, searchResults]);
 
   function showAllLocations() {
-    setBounds(null);
     setMapReset((value) => value + 1);
   }
   const selected = selectedId ? (getComplex(selectedId) ?? null) : null;
@@ -145,8 +149,9 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
       const id = params.get("complex") ?? (fromHistory ? null : rememberedComplexId());
       const complex = id ? getComplex(id) : null;
       setSelectedId(complex?.id ?? null);
-      if (complex) setPeriod(readRentPreferences(complex.id).period ?? { kind: "preset", key: "m3" });
-      setRememberedName(complex?.name ?? "");
+      if (complex) setLastViewedId(complex.id);
+      else setMobileView("list");
+      if (complex) setFilters(readRentShare(params) ?? readRentFilters(complex.id));
       recordRecent(complex?.id ?? null);
       if (complex) {
         setPanelSize((current) => current === "collapsed" ? "default" : current);
@@ -163,11 +168,10 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
     const complex = getComplex(id);
     if (!complex) return;
     setSelectedId(complex.id);
+    setLastViewedId(complex.id);
     if (complex.id !== selectedId) {
-      setPeriod(readRentPreferences(complex.id).period ?? { kind: "preset", key: "m3" });
-      setPeriodSaveError(false);
+      setFilters(readRentFilters(complex.id));
     }
-    setRememberedName(complex.name);
     setPanelSize((current) => current === "collapsed" ? "default" : current);
     rememberComplex(complex.id);
     recordRecent(complex.id);
@@ -176,15 +180,34 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
 
   const range = useMemo(() => rentPeriodRange(period), [period]);
 
+  function applyFilters(next: RentFilters): boolean {
+    if (!selectedId) return false;
+    const nextRange = rentPeriodRange(next.period);
+    if (!nextRange.ok) return false;
+    setFilters(next);
+    window.history.replaceState(null, "", rentShareUrl(window.location.href, selectedId, nextRange.from, nextRange.to, next));
+    return saveRentPreferences(selectedId, next);
+  }
+
   function selectComplex(complex: Complex) {
-    setListScope("all");
-    setExploreDistrict(complex.district);
-    setBounds(null);
     setSearchRevision((value) => value + 1);
     setPanelSize("default");
-    // 위치가 없는 검색 결과는 목록 복귀 시 해당 자치구 범위로 이동한다.
-    if (complex.lat == null || complex.lng == null) setMapReset((value) => value + 1);
     chooseComplex(complex.id);
+  }
+
+  function clearSelection() {
+    setSelectedId(null);
+    setMobileView("list");
+    updateComplexUrl(null);
+    try { localStorage.removeItem(LAST_COMPLEX_KEY); } catch { /* 저장이 제한되어도 목록으로 이동한다. */ }
+  }
+
+  function changeQuery(next: string) {
+    setQuery(next);
+    clearSelection();
+    setPanelSize("default");
+    setSearchRevision((value) => value + 1);
+    showAllLocations();
   }
 
   return (
@@ -206,7 +229,6 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
             <div className="min-w-0">
               <p className="text-[11px] font-semibold tracking-[0.08em] text-neutral-500 md:text-xs">서울 SH 행복주택</p>
               <h1 className="mt-0.5 text-xl font-bold tracking-[-0.035em] text-neutral-950 md:text-2xl">집언제</h1>
-              <p className="mt-0.5 truncate text-xs text-neutral-500 md:text-sm">단지 위치와 공개된 전월세 계약을 한눈에</p>
             </div>
           </div>
           <div className="shrink-0 rounded-xl border border-neutral-200/80 bg-white/75 px-2.5 py-2 text-right shadow-sm shadow-black/[0.02] md:px-3">
@@ -217,11 +239,12 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
             </p>
           </div>
         </div>
-        <ComplexSearch key={selectedId ?? "list"} initialQuery={rememberedName} recentComplexes={recentComplexes} recentMessage={recentMessage} onClearRecents={clearRecents} onSelect={selectComplex} />
+        <p className="mb-2 text-xs leading-5 text-neutral-600 md:text-sm">내 단지의 면적별 공개 계약 건수를 확인하세요</p>
+        <ComplexSearch query={query} onQueryChange={changeQuery} onNavigateResults={() => document.querySelector<HTMLButtonElement>("#complex-list button[data-complex]")?.focus()} recentComplexes={recentComplexes} recentMessage={recentMessage} onClearRecents={clearRecents} onSelect={selectComplex} />
       </header>
 
       <div className="relative flex min-h-0 flex-1 flex-col md:flex-row">
-        <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
+        <div className={`min-h-0 min-w-0 flex-1 overflow-hidden ${!selected && mobileView === "list" ? "invisible pointer-events-none absolute inset-0 md:visible md:pointer-events-auto md:relative md:inset-auto" : "relative"}`}>
           {mapKey ? (
             <HousingMap
               mapKey={mapKey}
@@ -230,7 +253,6 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
               searchRevision={searchRevision}
               selectedId={selectedId}
               onSelect={chooseComplex}
-              onBounds={(value) => { if (!selectedId) setBounds(value); }}
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-neutral-50 px-6 text-center">
@@ -246,11 +268,11 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
 
         <aside
           aria-label="단지 탐색"
-          className={`z-20 flex max-h-full shrink-0 flex-col overflow-hidden rounded-t-2xl border-t border-neutral-200 bg-white md:z-auto md:h-full md:w-[440px] md:rounded-none md:border-t-0 md:border-l ${selected && panelSize === "default" ? "h-[min(60dvh,78%)]" : PANEL_HEIGHTS[panelSize]}`}
+          className={`z-20 flex max-h-full shrink-0 flex-col overflow-hidden border-t border-neutral-200 bg-white md:z-auto md:h-full md:w-[440px] md:rounded-none md:border-t-0 md:border-l ${selected ? `rounded-t-2xl ${panelSize === "default" ? "h-[min(60dvh,78%)]" : PANEL_HEIGHTS[panelSize]}` : mobileView === "list" ? "h-full" : "h-16"}`}
         >
-          <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-neutral-100 px-4 md:hidden">
-            <p className="min-w-0 truncate text-sm font-medium">{selected ? panelSize === "collapsed" ? selected.name : "계약 현황" : "단지 목록"}</p>
-            <div className="flex shrink-0 gap-1" role="group" aria-label="패널 크기">
+          {selected || mobileView === "map" ? <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-neutral-100 px-4 md:hidden">
+            <p className="min-w-0 truncate text-sm font-medium">{selected ? panelSize === "collapsed" ? selected.name : "계약 현황" : searchQuery ? mobileView === "map" ? "검색 결과 지도" : "검색 결과" : mobileView === "map" ? `${district || "서울"} · ${listScope === "favorites" ? "관심 단지" : "단지 지도"}` : "단지 목록"}</p>
+            {selected ? <div className="flex shrink-0 gap-1" role="group" aria-label="패널 크기">
               {([
                 ["collapsed", "접기"],
                 ["default", "기본"],
@@ -268,18 +290,23 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
                   {label}
                 </Button>
               ))}
-            </div>
-          </div>
+            </div> : <Button type="button" variant="outline" className="h-11 shrink-0" aria-controls="complex-panel-content" onClick={() => setMobileView((view) => view === "list" ? "map" : "list")}>
+              {mobileView === "list" ? "지도 보기" : "목록 보기"}
+            </Button>}
+          </div> : null}
           <div
             id="complex-panel-content"
-            className={`min-h-0 flex-1 pb-[env(safe-area-inset-bottom)] md:block md:pb-0 ${panelSize === "collapsed" ? "hidden" : "block"}`}
+            className={`min-h-0 flex-1 pb-[env(safe-area-inset-bottom)] md:block md:pb-0 ${(selected ? panelSize === "collapsed" : mobileView === "map") ? "hidden" : "block"}`}
           >
             <ComplexPanel
-              searchRevision={searchRevision}
+              searchQuery={searchQuery}
+              searchResults={searchResults}
+              onClearSearch={() => changeQuery("")}
+              onShowMap={() => setMobileView("map")}
               onResetFilters={() => { setExploreDistrict(""); setFavoriteDistrict(""); setListScope("all"); showAllLocations(); }}
               complexes={complexes}
               selected={selected}
-              bounds={mapKey ? bounds : null}
+              lastViewedId={lastViewedId}
               favorites={favorites}
               favoriteMessage={favoriteMessage}
               onToggleFavorite={toggleFavorite}
@@ -287,25 +314,14 @@ export function HomeShell({ mapKey, hasRentKey }: HomeShellProps) {
               onListScopeChange={(scope) => { setListScope(scope); showAllLocations(); }}
               district={district}
               onDistrictChange={(value) => { setDistrict(value); showAllLocations(); }}
-              onShowAllLocations={showAllLocations}
               from={range.ok ? range.from : period.kind === "custom" ? period.from : ""}
               to={range.ok ? range.to : period.kind === "custom" ? period.to : ""}
               rentEnabled={hasRentKey && range.ok}
               rangeError={range.ok ? null : range.message}
-              periodControl={<>
-                <RentPeriodFilter period={period} onChange={(next) => {
-                  setPeriod(next);
-                  if (selectedId) setPeriodSaveError(!saveRentPreferences(selectedId, { period: next }));
-                }} />
-                <p className="mt-2 text-xs text-neutral-500">{periodSaveError ? "브라우저 저장이 제한되어 기간은 이번 화면에서만 유지됩니다." : "조회 기간과 관심 면적은 이 브라우저에 단지별로 저장됩니다."}</p>
-              </>}
+              filters={filters}
+              onApplyFilters={applyFilters}
               onSelect={chooseComplex}
-              onClear={() => {
-                setSelectedId(null);
-                setRememberedName("");
-                updateComplexUrl(null);
-                try { localStorage.removeItem(LAST_COMPLEX_KEY); } catch { /* 저장이 제한되어도 목록으로 이동한다. */ }
-              }}
+              onClear={clearSelection}
             />
           </div>
         </aside>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import {
   addressPeers,
   hasCoordinates,
@@ -11,21 +12,23 @@ import {
   type Complex,
 } from "@/lib/complexes";
 import { formatDate } from "@/lib/format";
-import type { MapBounds } from "@/components/housing-map";
-import { isInside } from "@/components/housing-map";
 import { RentSection } from "@/components/rent-section";
 import { ShInfo } from "@/components/sh-info";
-import { ShLinkBadge } from "@/components/sh-link-badge";
 import { CopyButton } from "@/components/copy-button";
 import { FavoriteButton } from "@/components/favorite-button";
+import { SearchHighlight } from "@/components/search-highlight";
+import { rentShareUrl, type RentFilters } from "@/lib/rent/share";
 
 export type ListScope = "all" | "favorites";
 
 type ComplexPanelProps = {
-  searchRevision: number;
+  searchQuery: string;
+  searchResults: Complex[] | null;
+  onClearSearch: () => void;
+  onShowMap: () => void;
   complexes: Complex[];
   selected: Complex | null;
-  bounds: MapBounds | null;
+  lastViewedId: string | null;
   favorites: string[];
   favoriteMessage: string;
   onToggleFavorite: (id: string) => void;
@@ -33,22 +36,25 @@ type ComplexPanelProps = {
   onListScopeChange: (scope: ListScope) => void;
   district: string;
   onDistrictChange: (district: string) => void;
-  onShowAllLocations: () => void;
   onResetFilters: () => void;
   from: string;
   to: string;
   rentEnabled: boolean;
   rangeError: string | null;
-  periodControl: ReactNode;
+  filters: RentFilters;
+  onApplyFilters: (filters: RentFilters) => boolean;
   onSelect: (id: string) => void;
   onClear: () => void;
 };
 
 export function ComplexPanel({
-  searchRevision,
+  searchQuery,
+  searchResults,
+  onClearSearch,
+  onShowMap,
   complexes,
   selected,
-  bounds,
+  lastViewedId,
   favorites,
   favoriteMessage,
   onToggleFavorite,
@@ -56,29 +62,34 @@ export function ComplexPanel({
   onListScopeChange,
   district,
   onDistrictChange,
-  onShowAllLocations,
   onResetFilters,
   from,
   to,
   rentEnabled,
   rangeError,
-  periodControl,
+  filters,
+  onApplyFilters,
   onSelect,
   onClear,
 }: ComplexPanelProps) {
-  const listScroll = useRef(0);
-  const [missingOpen, setMissingOpen] = useState(false);
-  const filterKey = `${listScope}:${district}:${searchRevision}`;
-  const lastFilter = useRef(filterKey);
+  const listScroll = useRef<Record<string, number>>({});
+  const [regionOpen, setRegionOpen] = useState(false);
+  const regionTrigger = useRef<HTMLButtonElement>(null);
+  const [rentActionContainer, setRentActionContainer] = useState<HTMLDivElement | null>(null);
+  const filterKey = searchQuery ? `search:${searchQuery}` : `browse:${listScope}:${district}`;
+  const backLabel = searchQuery ? "검색 결과" : listScope === "favorites" ? "관심 단지" : district ? `${district} 목록` : "단지 목록";
+  const mapButton = <Button type="button" variant="outline" className="h-11 shrink-0 px-3 text-xs md:hidden" onClick={onShowMap}>지도 보기</Button>;
 
   function renderRow(complex: Complex) {
+    const address = complex.address.replace(/^서울(?:특별시|시)?\s*/, "");
+    const street = address.startsWith(complex.district) ? address.slice(complex.district.length).trim() : address;
     return (
-      <li key={complex.id} className="flex items-start pr-2">
-        <button type="button" className="min-w-0 flex-1 px-4 py-3 text-left hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-neutral-400" onClick={() => onSelect(complex.id)}>
-          <span className="block text-sm font-medium">{complex.name}</span>
-          <ShLinkBadge complexId={complex.id} />
-          <span className="mt-0.5 block text-xs text-neutral-500">{complex.district} · {complex.address}</span>
-          {!hasCoordinates(complex) ? <span className="mt-1 block text-xs text-neutral-500">지도 위치 미확보</span> : null}
+      <li key={complex.id} className={`flex items-start border-b border-neutral-100 pr-2 ${lastViewedId === complex.id ? "bg-amber-50/70" : ""}`}>
+        <button type="button" data-complex={complex.id} aria-label={`${complex.name} ${complex.district} · ${street}`} className="min-w-0 flex-1 px-4 py-3 text-left hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-neutral-400" onClick={() => onSelect(complex.id)}>
+          <span className="line-clamp-2 text-base font-semibold leading-6"><SearchHighlight text={complex.name} query={searchQuery} /></span>
+          <span className="mt-1 block truncate text-xs text-neutral-500"><SearchHighlight text={`${complex.district} · ${street}`} query={searchQuery} /></span>
+          {lastViewedId === complex.id ? <span className="mt-1 block text-xs text-amber-800">방금 본 단지</span> : null}
+          {!hasCoordinates(complex) ? <span className="mt-1 block text-xs text-neutral-400">지도 표시 없음</span> : null}
         </button>
         <FavoriteButton name={complex.name} saved={favorites.includes(complex.id)} onToggle={() => onToggleFavorite(complex.id)} />
       </li>
@@ -86,60 +97,64 @@ export function ComplexPanel({
   }
 
   if (!selected) {
-    const matching = complexes.filter((complex) =>
+    const matching = searchResults ?? complexes.filter((complex) =>
       (!district || complex.district === district) &&
       (listScope !== "favorites" || favorites.includes(complex.id)),
     );
-    const useMapBounds = listScope === "all" && !!bounds;
-    const missing = matching.filter((complex) => !hasCoordinates(complex));
-    const visible = matching.filter((complex) => hasCoordinates(complex) && (!useMapBounds || isInside(complex, bounds!)));
     const districts = [...new Set(complexes.map((complex) => complex.district))].sort((a, b) => a.localeCompare(b, "ko"));
     return (
       <div className="flex h-full min-h-0 flex-col">
         <div className="shrink-0 space-y-2 px-4 pt-3 pb-2">
+          {searchQuery ? <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0" aria-live="polite" aria-atomic="true">
+            <h2 className="break-words text-sm font-semibold">‘{searchQuery}’ 검색 결과 · {matching.length}곳</h2>
+            <p className="mt-1 text-xs text-neutral-500">서울 전체에서 찾은 단지입니다.</p>
+            </div>
+            {mapButton}
+          </div> : <>
           <div role="group" aria-label="단지 찾기와 관심 목록" className="grid grid-cols-2 gap-1">
             {([["all", "단지 찾기"], ["favorites", `관심 ${favorites.length}`]] as const).map(([scope, label]) => (
               <Button key={scope} type="button" className="h-11 px-2" variant={listScope === scope ? "default" : "outline"} aria-pressed={listScope === scope} onClick={() => onListScopeChange(scope)}>{label}</Button>
             ))}
           </div>
-          <select aria-label="자치구 필터" className="h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm" value={district} onChange={(event) => onDistrictChange(event.target.value)}>
-            <option value="">모든 자치구</option>
-            {districts.map((name) => <option key={name} value={name}>{name}</option>)}
-          </select>
-          <h2 className="text-sm font-medium tabular-nums">
-            {district ? `${district} · ` : ""}{listScope === "favorites" ? `관심 단지 ${matching.length}곳` : useMapBounds ? `지도 안의 단지 ${visible.length}곳` : `위치 확인된 단지 ${visible.length}곳`}
-          </h2>
-          {bounds ? <Button type="button" variant="outline" className="h-11" onClick={onShowAllLocations}>{listScope === "favorites" ? "관심 단지 위치 보기" : `${district || "서울"} 단지 위치 보기`}</Button> : null}
-          <p className="mt-1 text-xs leading-5 text-neutral-500">
-            {listScope === "favorites" ? "지도 범위와 관계없이, 이 브라우저에 저장한 단지를 보여줍니다." : useMapBounds ? "현재 지도에 보이는 단지입니다. 지도를 움직이면 목록도 바뀝니다." : "자치구를 선택해 목록을 좁힐 수 있습니다."}
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <Button ref={regionTrigger} type="button" variant={district ? "ghost" : "outline"} className={`h-11 px-2 ${district ? "-ml-2" : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"}`} aria-label={`지역 선택: ${district || "지역으로 찾기 (서울 모든 지역)"}`} aria-haspopup="dialog" aria-expanded={regionOpen} onClick={() => setRegionOpen(true)}>
+              {district || "지역으로 찾기"} <span aria-hidden="true">⌄</span>
+            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              <h2 className="text-xs text-neutral-500 tabular-nums"><span className="sr-only">{listScope === "favorites" ? "관심 단지 " : "단지 "}</span>{matching.length}곳</h2>
+              {mapButton}
+            </div>
+          </div>
+          </>}
           {favoriteMessage ? <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p> : null}
         </div>
-        <div role="region" aria-label="단지 목록" className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        <div id="complex-list" role="region" aria-label="단지 목록" className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           ref={(node) => {
             if (!node) return;
-            if (lastFilter.current !== filterKey) { listScroll.current = 0; lastFilter.current = filterKey; }
-            node.scrollTop = listScroll.current;
+            node.scrollTop = listScroll.current[filterKey] ?? 0;
           }}
-          onScroll={(event) => { listScroll.current = event.currentTarget.scrollTop; }}>
+          onScroll={(event) => { listScroll.current[filterKey] = event.currentTarget.scrollTop; }}>
         <ul>
-          {visible.length === 0 ? (
+          {matching.length === 0 ? (
             <li className="space-y-3 px-4 py-6 text-sm text-neutral-500">
-              <p>{listScope === "favorites" && favorites.length === 0 ? "아직 관심 단지가 없습니다. 단지 옆 별표를 눌러 저장해 보세요." : missing.length ? "지도에 표시할 단지가 없습니다. 아래 위치 미확보 목록을 확인해 주세요." : "선택한 조건에 맞는 단지가 없습니다."}</p>
-              <Button type="button" variant="outline" className="h-11" onClick={onResetFilters}>조건 초기화하고 단지 찾기</Button>
+              <p>{searchQuery ? "검색 결과가 없습니다. 단지명이나 지역 이름을 바꿔 보세요." : listScope === "favorites" && favorites.length === 0 ? "아직 관심 단지가 없습니다. 단지 옆 별표를 눌러 저장해 보세요." : "선택한 조건에 맞는 단지가 없습니다."}</p>
+              <Button type="button" variant="outline" className="h-11" onClick={searchQuery ? onClearSearch : onResetFilters}>{searchQuery ? "검색 종료하고 이전 목록 보기" : "조건 초기화하고 단지 찾기"}</Button>
             </li>
           ) : (
-            visible.map(renderRow)
+            matching.map(renderRow)
           )}
         </ul>
-        {missing.length > 0 ? (
-          <details className="border-t border-neutral-200" open={missingOpen} onToggle={(event) => setMissingOpen(event.currentTarget.open)}>
-            <summary className="cursor-pointer px-4 py-4 text-sm font-medium">지도 위치 미확보 {missing.length}곳</summary>
-            <p className="px-4 pb-2 text-xs text-neutral-500">현재 지도 범위와 관계없는 단지입니다. 선택한 지역·관심 조건은 적용됩니다.</p>
-            <ul>{missing.map(renderRow)}</ul>
-          </details>
-        ) : null}
         </div>
+        <BottomSheet open={regionOpen} onClose={() => setRegionOpen(false)} title="지역 선택" description="선택한 지역의 단지를 목록과 지도에서 확인합니다." returnFocus={regionTrigger}>
+          <div className="grid grid-cols-3 gap-2" role="group" aria-label="자치구">
+            {["", ...districts].map((name) => (
+              <Button key={name} type="button" variant={district === name ? "default" : "outline"} className={`h-11 ${name ? "" : "col-span-3"}`} aria-pressed={district === name} onClick={() => { onDistrictChange(name); setRegionOpen(false); }}>
+                {name || "서울 모든 지역"}
+              </Button>
+            ))}
+          </div>
+        </BottomSheet>
       </div>
     );
   }
@@ -147,24 +162,27 @@ export function ComplexPanel({
   const peers = addressPeers(selected.id);
   const mixed = isMixedHousingType(selected);
   return (
-    <div className="h-full min-h-0 overflow-y-auto overscroll-contain">
+    <div className="relative h-full min-h-0">
+      <div data-detail-scroll className="h-full min-h-0 overflow-y-auto overscroll-contain scroll-pb-28">
       <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-neutral-100 bg-white/95 px-4 py-1 backdrop-blur-sm">
         <Button type="button" variant="ghost" className="-ml-2 h-11 shrink-0 px-2" onClick={onClear}>
-          ← 단지 목록
+          ← {backLabel}
         </Button>
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold" title={selected.name}>{selected.name}</h2>
         <FavoriteButton name={selected.name} saved={favorites.includes(selected.id)} onToggle={() => onToggleFavorite(selected.id)} />
       </div>
-      <div key={selected.id} className="space-y-4 px-4 py-3">
+      <div key={selected.id} className="space-y-4 px-4 pt-3 pb-28">
           {favoriteMessage ? <p role="status" className="text-xs leading-5 text-neutral-600">{favoriteMessage}</p> : null}
 
         <RentSection
+          actionContainer={rentActionContainer}
           complex={selected}
           from={from}
           to={to}
           enabled={rentEnabled}
           mixedHousing={mixed}
-          periodControl={periodControl}
+          filters={filters}
+          onApplyFilters={onApplyFilters}
           rangeError={rangeError}
           addressWarning={peers.length ? `이 주소는 ${peers.map((peer) => peer.name).join(", ")}와 겹쳐 공개 계약이 함께 잡힐 수 있습니다.` : undefined}
         />
@@ -172,7 +190,8 @@ export function ComplexPanel({
         <ShInfo complex={selected} />
         <section aria-label="단지 기본정보">
           <p className="mt-2 text-sm leading-6 text-neutral-600">{selected.address}</p>
-          <div className="mt-3"><CopyButton key={selected.id} label="단지 링크 복사" value={() => window.location.href} /></div>
+          <div className="mt-3"><CopyButton key={`${selected.id}:${from}:${to}:${filters.areas.join(",")}:${filters.contractType}`} label="조회 조건 링크 복사" value={() => rentShareUrl(window.location.href, selected.id, from, to, filters)} /></div>
+          <p className="mt-1 text-xs text-neutral-500">단지·기간·면적·계약 유형을 함께 공유합니다.</p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge variant="outline">{selected.housingType}</Badge>
             {hasCoordinates(selected) ? null : <Badge variant="secondary">지도 위치 미확보</Badge>}
@@ -201,6 +220,8 @@ export function ComplexPanel({
         </section>
 
       </div>
+      </div>
+      <div ref={setRentActionContainer} role="region" aria-label="계약 내역 바로가기" className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-white via-white/95 to-transparent px-4 pt-6 pb-3" />
     </div>
   );
 }

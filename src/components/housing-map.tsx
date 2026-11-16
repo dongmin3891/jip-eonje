@@ -19,7 +19,7 @@ type HousingMapProps = {
   resetView?: number;
   searchRevision?: number;
   onSelect: (id: string) => void;
-  onBounds: (bounds: MapBounds) => void;
+  onBounds?: (bounds: MapBounds) => void;
 };
 
 const scriptLoads = new Map<string, Promise<void>>();
@@ -343,7 +343,7 @@ export function HousingMap({ mapKey, complexes, selectedId, resetView = 0, searc
             const mapBounds = map.getBounds();
             const sw = mapBounds.getSouthWest();
             const ne = mapBounds.getNorthEast();
-            onBoundsRef.current({
+            onBoundsRef.current?.({
               sw: { lat: sw.getLat(), lng: sw.getLng() },
               ne: { lat: ne.getLat(), lng: ne.getLng() },
             });
@@ -473,7 +473,7 @@ export function HousingMap({ mapKey, complexes, selectedId, resetView = 0, searc
         const mapBounds = map.getBounds();
         const sw = mapBounds.getSouthWest();
         const ne = mapBounds.getNorthEast();
-        onBoundsRef.current({
+        onBoundsRef.current?.({
           sw: { lat: sw.getLat(), lng: sw.getLng() },
           ne: { lat: ne.getLat(), lng: ne.getLng() },
         });

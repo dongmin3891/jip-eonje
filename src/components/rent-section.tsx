@@ -1,7 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ArrowUp, ClipboardList, LoaderCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,15 +13,18 @@ import { formatAreaWithPyeong, formatDate, formatFetchedAt, formatFloor, formatM
 import type { Complex } from "@/lib/complexes";
 import { countByArea, mergeAreaKeys } from "@/lib/rent/areas";
 import type { ApiErrorBody, ContractType, RentAreasResponse, RentResponse } from "@/lib/rent/types";
-import { readRentPreferences, saveRentPreferences } from "@/lib/rent/preferences";
+import { RentPeriodFilter, rentPeriodRange } from "@/components/rent-period-filter";
+import type { RentFilters } from "@/lib/rent/share";
 
 type RentSectionProps = {
+  actionContainer: HTMLElement | null;
   complex: Complex;
   from: string;
   to: string;
   enabled: boolean;
   mixedHousing: boolean;
-  periodControl: ReactNode;
+  filters: RentFilters;
+  onApplyFilters: (filters: RentFilters) => boolean;
   rangeError: string | null;
   addressWarning?: string;
 };
@@ -67,22 +72,43 @@ export function RentSection(props: RentSectionProps) {
   return <RentSectionBody key={props.complex.id} {...props} />;
 }
 
-function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodControl, rangeError, addressWarning }: RentSectionProps) {
-  const [selectedAreas, setSelectedAreas] = useState(() => readRentPreferences(complex.id).areas ?? []);
+function RentSectionBody({ actionContainer, complex, from, to, enabled, mixedHousing, filters, onApplyFilters, rangeError, addressWarning }: RentSectionProps) {
+  const { areas: selectedAreas, contractType } = filters;
+  const [draftPeriod, setDraftPeriod] = useState(filters.period);
+  const draftRange = rentPeriodRange(draftPeriod);
   const [sheet, setSheet] = useState<"period" | "area" | "contracts">("area");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [fromContracts, setFromContracts] = useState(false);
   const [draftAreas, setDraftAreas] = useState<string[]>([]);
-  const [contractType, setContractType] = useState<TypeFilter>("all");
   const [draftType, setDraftType] = useState<TypeFilter>("all");
   const [saveError, setSaveError] = useState(false);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const focusSheetContent = useCallback((node: HTMLDivElement | null) => {
+    if (node && fromContracts) {
+      if (node.parentElement) node.parentElement.scrollTop = 0;
+      node.focus({ preventScroll: true });
+    }
+  }, [fromContracts]);
 
   function openSheet(target: typeof sheet, trigger: HTMLElement) {
     returnFocus.current = trigger;
+    setFromContracts(false);
+    setDraftPeriod(filters.period);
     setDraftAreas([...selectedAreas]);
     setDraftType(contractType);
     setSheet(target);
     setSheetOpen(true);
+  }
+  function editContractFilters(target: "period" | "area") {
+    setDraftPeriod(filters.period);
+    setDraftAreas([...selectedAreas]);
+    setDraftType(contractType);
+    setFromContracts(true);
+    setSheet(target);
+  }
+  function finishFilterSelection() {
+    if (fromContracts) setSheet("contracts");
+    else setSheetOpen(false);
   }
   function toggleDraftArea(value: string) {
     setDraftAreas((current) => current.includes(value)
@@ -90,10 +116,13 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
       : [...current, value].sort((a, b) => Number(a) - Number(b)));
   }
   function applyAreas() {
-    setSelectedAreas(draftAreas);
-    setContractType(draftType);
-    setSaveError(!saveRentPreferences(complex.id, { areas: draftAreas }));
-    setSheetOpen(false);
+    setSaveError(!onApplyFilters({ ...filters, areas: draftAreas, contractType: draftType }));
+    finishFilterSelection();
+  }
+  function applyPeriod() {
+    if (!draftRange.ok) return;
+    setSaveError(!onApplyFilters({ ...filters, period: draftPeriod }));
+    finishFilterSelection();
   }
 
   const contractQuery = useQuery({
@@ -122,6 +151,8 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
     return areaMatches && typeMatches;
   });
   const hasFilters = selectedAreas.length > 0 || contractType !== "all";
+  const actionLabel = countsReady ? "계약 내역 보기" : rangeError ? "조회 기간을 확인해 주세요" : !enabled ? "계약 조회 준비 중" : contractQuery.isError ? "계약 조회 실패" : "계약 불러오는 중…";
+  const loading = enabled && !rangeError && contractQuery.isPending;
 
   return (
     <section aria-label="공개된 전월세 계약" className="space-y-2">
@@ -138,9 +169,24 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
           <p role="status" className="text-3xl font-bold tabular-nums text-emerald-950">{countsReady ? `${filtered.length}건` : contractQuery.isError ? "조회 실패" : enabled && !rangeError ? "조회 중…" : "—"}</p>
         </div>
       </div>
-      {saveError ? <p className="text-xs text-neutral-500">브라우저 저장이 제한되어 관심 면적은 이번 화면에서만 유지됩니다.</p> : null}
+      {saveError ? <p className="text-xs text-neutral-500">브라우저 저장이 제한되어 조회 조건은 이번 화면에서만 유지됩니다.</p> : null}
 
-      <Button type="button" className="h-11 w-full" disabled={!countsReady} aria-haspopup="dialog" onClick={(event) => openSheet("contracts", event.currentTarget)}>계약 내역 보기</Button>
+      {actionContainer ? createPortal(
+        <Button
+          type="button"
+          className="pointer-events-auto h-14 w-full justify-between gap-3 rounded-2xl bg-emerald-800 px-4 text-white shadow-lg shadow-emerald-950/20 hover:bg-emerald-900 disabled:opacity-80"
+          disabled={!countsReady}
+          aria-label={countsReady ? `${actionLabel} · ${filtered.length}건` : actionLabel}
+          aria-haspopup="dialog"
+          onClick={(event) => openSheet("contracts", event.currentTarget)}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            {loading ? <LoaderCircle aria-hidden="true" className="size-5 animate-spin motion-reduce:animate-none" /> : <ClipboardList aria-hidden="true" className="size-5" />}
+            <span className="text-sm font-semibold">{actionLabel}</span>
+          </span>
+          {countsReady ? <span className="flex shrink-0 items-center gap-2"><span className="rounded-full bg-white/15 px-2.5 py-1 text-sm font-semibold tabular-nums">{filtered.length}건</span><ArrowUp aria-hidden="true" className="size-4" /></span> : null}
+        </Button>, actionContainer,
+      ) : null}
       <p className="text-xs leading-5 text-neutral-500">단지 전체 공개 계약입니다. 행복주택 당첨자의 계약 인원과 다를 수 있습니다.</p>
 
       {addressWarning ? <p className="text-xs leading-5 text-neutral-500">{addressWarning}</p> : null}
@@ -187,16 +233,27 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         title={sheet === "period" ? "조회 기간" : sheet === "area" ? "관심 면적 선택" : "계약 내역"}
-        description={sheet === "contracts" ? `${complex.name} · ${formatDate(from)} – ${formatDate(to)} · ${filtered.length}건` : complex.name}
+        description={sheet === "contracts" ? `${complex.name} · ${formatDate(from)} – ${formatDate(to)}` : complex.name}
+        headerContent={sheet === "contracts" ? (
+          <div role="group" aria-label="적용된 조회 조건" className="mt-2 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto text-xs">
+            {(selectedAreas.length ? selectedAreas.map((area) => formatAreaWithPyeong(Number(area))) : ["모든 면적"]).map((label) => <span key={label} className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-900">{label}</span>)}
+            <span className="rounded-md bg-neutral-100 px-2 py-1">{contractType === "all" ? "모든 계약 유형" : contractType}</span>
+            <span className="rounded-md bg-neutral-100 px-2 py-1 font-semibold" aria-live="polite">{countsReady ? `${filtered.length}건` : actionLabel}</span>
+          </div>
+        ) : undefined}
         returnFocus={returnFocus}
-        footer={sheet === "area" ? (
+        footer={sheet !== "contracts" ? (
           <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="outline" className="h-11" onClick={() => setSheetOpen(false)}>취소</Button>
-            <Button type="button" className="h-11" onClick={applyAreas}>적용</Button>
+            <Button type="button" variant="outline" className="h-11" onClick={finishFilterSelection}>취소</Button>
+            <Button type="button" className="h-11" disabled={sheet === "period" && !draftRange.ok} onClick={sheet === "period" ? applyPeriod : applyAreas}>{fromContracts ? "적용하고 내역 보기" : "적용"}</Button>
           </div>
         ) : undefined}
       >
-        {sheet === "period" ? periodControl : sheet === "area" ? (
+        <div key={sheet} ref={focusSheetContent} tabIndex={-1} className="outline-none">
+        {sheet === "period" ? <>
+          <RentPeriodFilter period={draftPeriod} onChange={setDraftPeriod} />
+          <p className="mt-3 text-xs leading-5 text-neutral-500">적용을 누르면 선택한 기간으로 조회합니다. 조회 조건은 이 브라우저에 단지별로 저장됩니다.</p>
+        </> : sheet === "area" ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm text-neutral-600">여러 면적 선택 가능</p>
@@ -232,13 +289,23 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
 
         ) : (
           <div>
-          {filtered.length === 0 ? (
+          {!countsReady ? (
+            <div className="space-y-3 rounded-xl bg-neutral-50 px-4 py-6">
+              <p role={contractQuery.isError ? "alert" : "status"} className="text-sm">{contractQuery.isError ? contractQuery.error.message : actionLabel}</p>
+              {contractQuery.isError ? <Button type="button" variant="outline" disabled={contractQuery.isFetching} onClick={() => void contractQuery.refetch()}>다시 시도</Button> : null}
+              <Button type="button" variant="outline" className="h-11" onClick={() => editContractFilters("period")}>기간 변경</Button>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="rounded-xl bg-neutral-50 px-4 py-6 text-center">
               <p className="text-sm font-medium">조건에 맞는 공개 계약이 없습니다.</p>
               <p className="mt-2 text-sm leading-6 text-neutral-500">
                 {hasFilters ? "관심 면적을 변경하거나 조회 기간을 늘려보세요." : "조회 기간을 늘려 다시 확인해 보세요."}
               </p>
               <p className="mt-2 text-xs leading-5 text-neutral-500">0건이 당첨이나 입주가 없다는 뜻은 아닙니다.</p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button type="button" className="h-11" onClick={() => editContractFilters("period")}>기간 변경</Button>
+                <Button type="button" variant="outline" className="h-11" onClick={() => editContractFilters("area")}>면적 변경</Button>
+              </div>
             </div>
           ) : (
             <ul aria-label="개별 계약 내역" className="divide-y divide-neutral-100 border-y border-neutral-100">
@@ -266,6 +333,7 @@ function RentSectionBody({ complex, from, to, enabled, mixedHousing, periodContr
           </div>
 
         )}
+        </div>
       </BottomSheet>
     </section>
   );
