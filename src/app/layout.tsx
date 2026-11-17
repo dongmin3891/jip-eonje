@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import type { ReactNode } from "react";
 
 import { Providers } from "@/components/providers";
@@ -34,6 +35,12 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body className="h-full bg-white text-neutral-900">
         <Providers>{children}</Providers>
+        <Script
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          type="module"
+          strategy="afterInteractive"
+          data-cf-beacon='{"token":"2c4994aa762a4fbb35836012940e41f"}'
+        />
       </body>
     </html>
   );
