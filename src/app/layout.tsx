@@ -39,7 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           src="https://static.cloudflareinsights.com/beacon.min.js"
           type="module"
           strategy="afterInteractive"
-          data-cf-beacon='{"token":"2c4994aa762a4fbb35836012940e41f"}'
+          data-cf-beacon='{"token":"2c4994aa762a4fbbb35836012940e41f"}'
         />
       </body>
     </html>
