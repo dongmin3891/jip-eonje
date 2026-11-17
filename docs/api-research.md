@@ -1,83 +1,131 @@
-# 공공 API 조사
+# 공공 API 조사와 데이터 채택 기준
 
-조사일 2026-11-13. 인증키가 없어 실거래 API와 카카오맵 SDK의 성공 응답은 호출하지 못했다. 아래 원본 파일 내려받기와 페이지 응답은 이 날짜에 다시 확인했다.
+[README](../README.md) · [개발 가이드](development.md)
+
+**외부 자료 조사일: 2026-11-13.** 당시 원본 파일 다운로드와 페이지 응답을 확인했으나, 인증키가 필요한 국토부 실거래 API와 카카오맵 SDK의 정상 작동은 확인하지 못했습니다. 이 문서는 그 조사 기록과 현재 저장소의 처리 규칙을 정리한 것으로, 외부 서비스의 최신 상태를 보장하지 않습니다.
+
+## 연동 현황
+
+| 정보 | 출처 | 앱에서 사용하는 방식 |
+| --- | --- | --- |
+| 행복주택 단지 목록 | 서울 열린데이터광장 OA-12027 | 원본 파일에서 대상 행을 골라 정적 JSON 생성 |
+| 단지 좌표 | 서울 열린데이터광장 OA-15818 | 주소·단지명 매칭, 필요 시 카카오 주소 검색 보완 |
+| 전월세 계약 | 국토부 아파트 전월세 실거래가 API | 서버에서 지역·월별 조회 후 주소 매칭 |
+| 전용면적 목록 | 국토부 계약 자료 | 생성 스크립트가 최근 36개월을 조회해 기존 목록에 합산 |
+| 공가·예비자 안내 | SH 공식 주택정보 | 확인된 상세페이지 또는 주택정보 메인으로 연결 |
+| 지도 | 카카오맵 JavaScript SDK | 브라우저에서 지도·마커 표시 |
 
 ## 단지 목록
 
-서울 열린데이터광장 [OA-12027 서울주택도시개발공사_주택관리현황](https://data.seoul.go.kr/dataList/OA-12027/F/1/datasetView.do).
+출처는 [OA-12027 서울주택도시개발공사_주택관리현황](https://data.seoul.go.kr/dataList/OA-12027/F/1/datasetView.do)입니다. 조사 당시 제공 부서는 SH공사 주택관리부, 갱신 주기는 연간으로 안내되어 있었습니다.
 
-- 제공: SH공사 주택관리부. 연간 갱신.
-- 내려받기: `POST https://datafile.seoul.go.kr/bigfile/iot/inf/nio_download.do?&useCache=false`
-- 폼: `infId=OA-12027`, `seqNo=8`, `seq=8`, `infSeq=3`. 응답이 xlsx(`PK`)가 아니면 파일 번호가 바뀐 것이다.
-- 시트 `25.12.31.기준`. 기준일 2025-12-31. 825행.
-- 열: 자치구명, 단지명, 주택유형, 임대세대수, 입주개시일, 주소.
-- 채택 규칙: 주택유형에 「행복」이 포함된 행만. 219단지.
+| 항목 | 조사 당시 원본 |
+| --- | --- |
+| 시트 / 기준일 | `25.12.31.기준` / 2025-12-31 |
+| 전체 행 | 825행 |
+| 사용하는 열 | 자치구명, 단지명, 주택유형, 임대세대수, 입주개시일, 주소 |
+| 채택 규칙 | 주택유형에 ‘행복’이 포함된 행 |
+| 채택 결과 | 219단지 |
 
-쓰지 않은 목록:
+원본을 받는 요청은 다음과 같습니다. 파일 번호는 새 원본이 게시되면 달라질 수 있습니다.
 
-- 공공데이터포털 15099541 공공주택 현황. 2022-02-28 기준이라 오래되었다.
-- 15066029 행복주택 공급계획. 계획 자료라 입주 단지가 아니다.
-- 15004875 주택관리현황. 유형별 합계만 있고 단지 목록이 없다.
+```text
+POST https://datafile.seoul.go.kr/bigfile/iot/inf/nio_download.do?&useCache=false
+Content-Type: application/x-www-form-urlencoded
 
-임대세대수는 해당 주택유형 세대수이며 공가가 아니다. 여러 유형이 쉼표로 묶인 행은 그 합계다.
+infId=OA-12027&seqNo=8&seq=8&infSeq=3
+```
+
+스크립트는 응답이 XLSX의 `PK` 시그니처로 시작하는지와 예상 열 구성을 확인합니다. 다운로드 응답이 바뀌면 파일 번호와 원본 구조를 먼저 확인합니다.
+
+다음 자료는 단지 목록의 근거로 채택하지 않았습니다.
+
+| 자료 | 채택하지 않은 이유 |
+| --- | --- |
+| 공공데이터포털 15099541 공공주택 현황 | 조사 당시 기준일이 2022-02-28로 더 오래된 자료 |
+| 15066029 행복주택 공급계획 | 입주 단지 현황이 아닌 공급 계획 |
+| 15004875 주택관리현황 | 단지 목록 없이 유형별 합계 제공 |
+
+임대세대수는 공가 수가 아닙니다. 주택유형이 여러 개 묶인 행의 세대수는 해당 유형들의 합계입니다.
 
 ## 좌표
 
-서울 열린데이터광장 [OA-15818 서울시 공동주택 아파트 정보](https://data.seoul.go.kr/dataList/OA-15818/S/1/datasetView.do). 원천은 K-apt. 일 갱신. EUC-KR CSV 2,898행.
+출처는 [OA-15818 서울시 공동주택 아파트 정보](https://data.seoul.go.kr/dataList/OA-15818/S/1/datasetView.do)입니다. 원천은 K-apt이며, 조사 당시 일 단위 갱신으로 안내되었습니다. 사용한 원본은 EUC-KR CSV 2,898행입니다.
 
-- 내려받기: `POST https://datafile.seoul.go.kr/bigfile/iot/sheet/csv/download.do`
-- 폼: `srvType=S`, `infId=OA-15818`, `serviceKind=1`, `pageNo=1`, `gridTotalCnt=10000`, `ssUserId=SAMPLE_VIEW`, `filterCol=필터선택`.
+```text
+POST https://datafile.seoul.go.kr/bigfile/iot/sheet/csv/download.do
+Content-Type: application/x-www-form-urlencoded
 
-매칭 순서:
+srvType=S&infId=OA-15818&serviceKind=1&pageNo=1&gridTotalCnt=10000&ssUserId=SAMPLE_VIEW&filterCol=필터선택
+```
 
-1. 자치구와 도로명·건물번호가 같으면 `kapt-address`. 145곳.
-2. 자치구와 정규화한 단지명이 하나만 맞고, 법정동이 있으면 법정동까지 같으면 `kapt-name`. 8곳.
-3. `KAKAO_REST_API_KEY` 가 있으면 카카오 로컬 주소검색. 구가 같을 때만 채택. 이번 생성에서는 키가 없어 0곳.
-4. 나머지는 좌표 없음. 66곳. 추정하지 않는다.
+좌표는 다음 순서로 찾습니다.
 
-지오코딩에 쓰지 않은 것: 행정안전부 위치정보요약DB는 신청이 필요하고, Nominatim은 오배치 위험이 있다.
+1. 자치구와 도로명·건물번호가 일치하면 `kapt-address`로 채택합니다.
+2. 자치구와 정규화한 단지명이 일치하는 후보가 하나이면 `kapt-name`으로 채택합니다. 법정동 정보가 있으면 함께 대조합니다.
+3. K-apt 좌표가 없고 기존 데이터에 `kakao-geocode` 좌표가 있으면 유지합니다.
+4. 남은 단지는 `KAKAO_REST_API_KEY`가 있을 때 카카오 로컬 주소검색으로 보완합니다. 자치구가 같은 결과만 사용합니다.
+5. 끝까지 확인하지 못한 좌표는 `null`로 남깁니다.
 
-좌표가 없는 단지는 검색과 실거래에는 남기고 마커에는 넣지 않는다.
+2026-11-13 생성 결과는 주소 매칭 145곳, 단지명 매칭 8곳, 카카오 지오코딩 0곳, 좌표 미확보 66곳입니다. 좌표가 없어도 검색·실거래 조회에는 포함하고 지도 마커에서만 제외합니다.
+
+행정안전부 위치정보요약DB는 별도 신청이 필요하고, Nominatim은 잘못된 위치를 채택할 우려가 있어 이 생성 과정에 사용하지 않았습니다.
 
 ## 전월세 실거래
 
-[국토교통부 아파트 전월세 실거래가 자료](https://www.data.go.kr/data/15126474/openapi.do). 페이지는 2026-11-13에 HTTP 200이었다.
+출처는 [국토교통부 아파트 전월세 실거래가 자료](https://www.data.go.kr/data/15126474/openapi.do)입니다. 조사 당시 페이지는 HTTP 200으로 응답했으며, 버전 1.0·배포일 2024-07-17·일 1회 갱신으로 안내되어 있었습니다. 이는 인증된 API 성공 응답을 확인했다는 의미는 아닙니다.
 
-- `GET https://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent`
-- 버전 1.0. 배포 2024-07-17. 일 1회 갱신.
-- 필수: `serviceKey`, `LAWD_CD`(법정동코드 앞 5자리), `DEAL_YMD`(YYYYMM).
-- 선택: `pageNo`, `numOfRows`. 이 앱은 `numOfRows=1000`.
-- 성공 `resultCode` `000`. 데이터 없음 `03`. 숫자로 파싱된 `0` 도 성공으로 본다.
-- 개발계정 트래픽은 1만 건 수준이다. 게이트웨이 `returnReasonCode` 30 미등록, 31 만료, 32 IP 미허용, 22 트래픽 초과.
+```text
+GET https://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent
+```
 
-쓰는 필드: `umdNm`, `jibun`, `roadnm`, `roadnmbonbun`, `roadnmbubun`, `aptNm`, `aptSeq`, `excluUseAr`, `dealYear`, `dealMonth`, `dealDay`, `deposit`, `monthlyRent`, `floor`, `contractType`, `cdealType`, `cdealDay`.
+| 요청 값 | 용도 |
+| --- | --- |
+| `serviceKey` | 공공데이터포털 인증키 |
+| `LAWD_CD` | 법정동코드 앞 5자리 |
+| `DEAL_YMD` | 계약월, `YYYYMM` |
+| `pageNo` | 페이지 번호 |
+| `numOfRows` | 페이지당 행 수, 앱에서는 1,000 |
 
-금액은 만원이다. `50,000` 은 5억이다.
+사용하는 응답 필드는 `umdNm`, `jibun`, `roadnm`, `roadnmbonbun`, `roadnmbubun`, `aptNm`, `aptSeq`, `excluUseAr`, `dealYear`, `dealMonth`, `dealDay`, `deposit`, `monthlyRent`, `floor`, `contractType`, `cdealType`, `cdealDay`입니다.
 
-매칭:
+금액 단위는 **만원**입니다. 예를 들어 원본의 `50,000`은 5억 원입니다. `resultCode`의 성공·데이터 없음 응답과 게이트웨이의 인증·한도 오류는 [parse.ts](../src/lib/rent/parse.ts)에서 처리합니다. 게이트웨이 코드 30·31·32는 인증 관련 오류, 22는 호출 한도 초과로 구분합니다. 실제 사용 가능한 호출량은 발급 계정의 승인 조건에서 확인합니다.
 
-- 법정동(공백 제거)과 지번(공백·끝의 「번지」 제거, `산13-13` 유지)이 같거나
-- 도로명과 건물번호를 붙인 값이 같다. `roadnm` 이 번호 없이 끝나면 본번·부번으로 번호를 붙인다.
-- 단지명만 같은 경우는 제외한다.
-- `cdealType` 또는 `cdealDay` 가 있으면 취소로 보고 뺀다. `dealingGbn` 은 취소 판정에 쓰지 않는다.
-- 계약 고유번호가 없어 내용이 같은 행은 지우지 않는다. 공공임대는 같은 날 같은 조건이 반복된다. 페이지가 겹치면 건수가 늘 수 있다.
+### 주소 매칭과 계약 해석
 
-조회는 필요한 월만 하고, 받은 뒤 계약일과 단지로 거른다. 최근 두 달은 6시간, 그 이전은 7일 메모리 캐시. 같은 월 요청은 합치고, 월 조회는 동시에 4개까지. 한 달이 30페이지를 넘으면 일부만 보여 주지 않고 오류로 올린다. 타임아웃은 20초.
+- 법정동과 지번이 같거나, 도로명과 건물번호가 같으면 해당 단지의 계약으로 연결합니다.
+- 법정동·지번의 공백과 지번 끝의 ‘번지’를 정리하되 `산13-13` 같은 표기는 유지합니다. 도로명 응답에 건물번호가 없으면 본번·부번을 조합합니다.
+- 단지명만 같은 계약은 연결하지 않습니다.
+- `cdealType` 또는 `cdealDay`에 유효한 취소 표시가 있으면 제외합니다. 빈 값·`0`·`-`·`null` 문자열은 취소 표시로 보지 않으며, `dealingGbn`은 취소 판정에 사용하지 않습니다.
+- 계약 고유번호가 없어 내용이 같은 행도 유지합니다. 공공임대에서는 같은 날 같은 조건의 계약이 반복될 수 있습니다. 반대로 외부 API 페이지에 중복이 있으면 건수가 늘어날 수 있습니다.
+- 주소가 같거나 여러 주택유형이 섞인 단지는 공개 계약을 행복주택 계약만으로 구분할 수 없습니다. 상세 화면에서 이 한계를 안내합니다.
 
-서울 `LAWD_CD`: 종로 11110, 중구 11140, 용산 11170, 성동 11200, 광진 11215, 동대문 11230, 중랑 11260, 성북 11290, 강북 11305, 도봉 11320, 노원 11350, 은평 11380, 서대문 11410, 마포 11440, 양천 11470, 강서 11500, 구로 11530, 금천 11545, 영등포 11560, 동작 11590, 관악 11620, 서초 11650, 강남 11680, 송파 11710, 강동 11740.
+요청은 필요한 계약월만 조회하고, 받은 뒤 계약일과 주소로 필터링합니다. 캐시·병렬 처리·요청 제한·오류 응답은 [개발 가이드](development.md#캐시와-요청-제한)에 정리했습니다. 서울 자치구별 코드는 [단지 생성 스크립트](../scripts/build-complexes.mjs)의 `LAWD_CD_BY_DISTRICT`에서 관리합니다.
 
 ## SH 공가·예비자
 
-단지별 공가, 공급형별 예비자, 최근 1년 퇴거를 외부에 주는 공식 API는 찾지 못했다.
+2026-11-13 조사에서는 단지별 공가, 공급형별 예비자, 최근 1년 퇴거를 함께 제공하는 공식 외부 API를 확인하지 못했습니다.
 
-- 공공데이터포털의 SH 자료는 파일 위주이고, 단지별 공가·예비자 오픈 API는 없었다.
-- [SH 오픈 API 안내](https://www.i-sh.co.kr/app/lay2/program/S1T437C440/open/govern/openData/openApi/openDataInfoView.do) 에는 채용, 상가·공장, 토지, 임대·분양 공고, 계약 등이 있고 공가·대기자는 없다.
-- 마이홈 예비입주자 대기(공공데이터포털 15108378, `HWSPR03/moveWaitStsList`)는 입주대기자와 퇴거는 있으나 공가 수와 기준일이 없다. SH 단지가 결과에 있는지는 키 없이 확인하지 않아 이 MVP에서는 쓰지 않는다.
+- 공공데이터포털의 SH 자료는 파일 위주였고, 조사 범위에서 단지별 공가·예비자 API를 찾지 못했습니다.
+- [SH 오픈 API 안내](https://www.i-sh.co.kr/app/lay2/program/S1T437C440/open/govern/openData/openApi/openDataInfoView.do)에는 채용, 상가·공장, 토지, 임대·분양 공고, 계약 등이 안내되어 있었습니다.
+- 마이홈 예비입주자 대기 API인 공공데이터포털 15108378, `HWSPR03/moveWaitStsList`는 조사 당시 입주대기자·퇴거 정보가 있으나 공가 수와 기준일이 없는 것으로 파악했습니다. SH 단지 포함 여부는 인증된 응답으로 확인하지 못해 채택하지 않았습니다.
 
-공가·예비자·퇴거 수는 가져오지 않는다. 내부 API를 호출하거나 화면을 긁지 않는다. 자치구, 단지명, 도로명 주소가 함께 맞는 단지는 `selectHouseImgInfo.do?ctgrCd=10&biznsCd=` 상세페이지로 보내고, 그렇지 않으면 [SH 주택정보](https://www.i-sh.co.kr/houseinfo/main/selectFromMain.do) 메인으로 보낸다. 주소는 `src/data/sh-links.json` 에 있고 `src/lib/sh/link.ts` 가 읽는다.
+현재 앱은 SH 내부 API나 화면 수집으로 숫자를 가져오지 않습니다. 자치구·단지명·도로명 주소를 확인한 단지는 `selectHouseImgInfo.do?ctgrCd=10&biznsCd=` 형식의 상세페이지로 연결하고, 나머지는 [SH 주택정보 메인](https://www.i-sh.co.kr/houseinfo/main/selectFromMain.do)으로 보냅니다.
 
-## 지도
+검증한 주소는 [sh-links.json](../src/data/sh-links.json)에 저장합니다. [link.ts](../src/lib/sh/link.ts)가 상세 URL 형식과 사업코드를 확인하고, 유효하지 않으면 메인 주소로 대체합니다.
 
-카카오맵 JavaScript SDK. `https://dapi.kakao.com/v2/maps/sdk.js?appkey=&autoload=false&libraries=clusterer`.
+## 지도 SDK
 
-키는 서버 환경변수 `KAKAO_MAP_JS_KEY` 에서 읽어 브라우저에 전달한다. 잘못된 키는 SDK 스크립트가 401과 `wrong appKey` 로 거절하는 것을 이전 확인에서 봤고, 그 경우 화면은 오류 문구를 보여 준다. 유효한 키와 허용 도메인으로 지도가 열리는 것은 아직 확인하지 못했다.
+카카오맵 JavaScript SDK를 사용합니다.
+
+```text
+https://dapi.kakao.com/v2/maps/sdk.js?appkey=<JavaScript 키>&autoload=false&libraries=clusterer
+```
+
+키는 서버 환경변수 `KAKAO_MAP_JS_KEY`에서 읽어 브라우저에 전달합니다. 브라우저에서 사용하는 키이므로 허용 도메인을 설정해야 합니다.
+
+기존 조사 기록에는 잘못된 키에 대해 SDK가 HTTP 401과 `wrong appKey`로 거절한 사례가 있습니다. 유효한 JavaScript 키와 허용 도메인에서 지도가 정상 표시되는지는 해당 기록에서 확인하지 못했습니다.
+
+## 후속 검증 시 기록할 것
+
+실제 연동을 확인할 때는 확인 날짜, 대상 기능, 실행 환경, 성공·실패 결과를 남깁니다. 인증키 자체는 기록하지 않습니다. 원본의 기준일이나 파일 번호가 달라졌다면 생성 스크립트, 메타정보와 README 수치도 함께 갱신합니다.
