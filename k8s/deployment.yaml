@@ -24,7 +24,7 @@ spec:
         - name: ghcr-pull
       containers:
         - name: web
-          image: ghcr.io/dongmin3891/jip-eonje:ea5ff0f7c380e29954b1f259850455ef2463e560
+          image: ghcr.io/dongmin3891/jip-eonje:668cb1c1b6ec5083d6d3d05e755be9040227b47f
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
